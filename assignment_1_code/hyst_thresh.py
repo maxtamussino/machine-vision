@@ -30,26 +30,19 @@ def hyst_thresh(edges_in: np.array, low: float, high: float) -> np.array:
     :rtype: np.array with shape (height, width) with dtype = np.float32 and values either 0 or 1
     """
     ######################################################
-    width,height = edges_in.shape
-    bitwise_img = np.zeros(edges_in.shape).astype("float32")
-    edges_in /= np.amax(edges_in)
 
-    queue = []
-    for idx,edge_prop in np.ndenumerate(edges_in):
-        if edge_prop > high:
-            queue.append(idx)
-            bitwise_img[idx] = 1
+    # Normalise and remove pixels under low threshold
+    edges_in = edges_in / np.amax(edges_in)
+    edges_in = np.where(edges_in > low, edges_in, 0)
 
-    for idx in queue:
-        for x in range(idx[0]-1,idx[0]+2):
-            for y in range(idx[1]-1,idx[1]+2):
-                if x == -1 or x == width:
-                    continue
-                if y == -1 or y == height:
-                    continue
-                if not (x,y) in queue and edges_in[x][y] >= low:
-                    queue.append((x,y))
-                    bitwise_img[x][y] = 1
+    # Find connected edges
+    labels_num, labels = cv2.connectedComponents((edges_in * 255).astype(np.uint8))
+    bitwise_img = np.zeros(edges_in.shape).astype(np.float32)
 
+    # For every edge, check if one pixel is above higher threshold
+    for i in range(1, labels_num):
+        edge = labels == i
+        if np.logical_and(edge, edges_in > high).any():
+            bitwise_img += np.where(edge, 1., 0.)
     ######################################################
     return bitwise_img

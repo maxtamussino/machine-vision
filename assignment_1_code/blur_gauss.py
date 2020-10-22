@@ -10,8 +10,6 @@ MatrNr: 01611815
 import cv2
 import numpy as np
 
-import math
-
 def blur_gauss(img: np.array, sigma: float) -> np.array:
     """ Blur the input image with a Gaussian filter with standard deviation of sigma.
 
@@ -26,7 +24,6 @@ def blur_gauss(img: np.array, sigma: float) -> np.array:
     """
     ######################################################
     # Blurred image initialized using original image shape
-    width, height = img.shape
     img_blur = np.zeros(img.shape).astype("float32")
 
     # Kernel size is determined
@@ -37,21 +34,20 @@ def blur_gauss(img: np.array, sigma: float) -> np.array:
     # 0,1 1,1 2,1  ->  -1, 0  0, 0  1, 0
     # 0,2 1,2 2,2      -1, 1  0, 1  1, 1
     # Array Index      Gauss Calculation
-    kernel_coord_offset = int((kernel_width-1)/2)
-
-    # This range is for x and y coordinates in gauss calculation
-    kernel_coord_range = range(-kernel_coord_offset,kernel_coord_offset+1)
+    kernel_coord_offset = int(np.floor((kernel_width-1)/2))
 
     # The kernel is initialized
     kernel = np.zeros(shape=(kernel_width,kernel_width)).astype("float32")
 
     # Kernel calculation
-    for x in kernel_coord_range:
-        for y in kernel_coord_range:
-            kernel[x+kernel_coord_offset,y+kernel_coord_offset] = math.exp(-(x*x+y*y)/(2*sigma*sigma))
+    for x, row in enumerate(kernel):
+        i = x - kernel_coord_offset
+        for y, elem in enumerate(row):
+            j = y - kernel_coord_offset
+            kernel[x, y] = np.exp(-(i*i+j*j)/(2*sigma*sigma))
 
     # Kernel normalization
-    kernel /= np.sum(kernel)
+    kernel /= np.sum(kernel.flatten())
 
     # Kernel application
     cv2.filter2D(img,-1,kernel,img_blur,borderType=cv2.BORDER_REPLICATE)

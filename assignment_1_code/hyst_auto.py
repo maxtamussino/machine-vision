@@ -33,18 +33,13 @@ def hyst_thresh_auto(edges_in: np.array, low_prop: float, high_prop: float) -> n
     :rtype: np.array with shape (height, width) with dtype = np.float32 and values either 0 or 1
     """
     ######################################################
-    width, height = edges_in.shape
     edges_in /= np.amax(edges_in)
-    edges_sorted = np.sort(edges_in.ravel())
-    print(len(edges_sorted))
-    edges_sorted = edges_sorted[edges_sorted != 0]
+    edges_sorted = np.sort(edges_in[edges_in != 0].ravel())
     pixel_num = len(edges_sorted)
 
-    low = round(edges_sorted[round(pixel_num * (1 - low_prop))],2)
-    print("Low: {}".format(low))
-
-    high = round(edges_sorted[round(pixel_num * (1 - high_prop))],2)
-    print("High: {}".format(high))
+    low = edges_sorted[round(pixel_num * (1 - low_prop))]
+    high = edges_sorted[round(pixel_num * (1 - high_prop))]
+    print("Hysteresis calculated with...\n   High: {:.2f}\n   Low: {:.2f}".format(high, low))
 
     hyst_out = hyst_thresh(edges_in, low, high)
     ######################################################

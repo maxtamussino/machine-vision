@@ -37,7 +37,6 @@ def sobel(img: np.array) -> (np.array, np.array):
 
     # Calculate total gradient and its direction
     gradient = np.sqrt(np.square(sobel_x) + np.square(sobel_y))
-    orientation = np.arctan2(sobel_x, sobel_y)
-
+    orientation = np.arctan2(sobel_y, sobel_x)
     ######################################################
     return gradient, orientation
