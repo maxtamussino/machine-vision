@@ -26,7 +26,7 @@ from helper_functions import show_image
 if __name__ == '__main__':
 
     # Define behavior of the show_image function. You can change these variables if necessary
-    save_image = True
+    save_image = False
     matplotlib_plotting = False
 
     # Read image
