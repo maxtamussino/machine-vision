@@ -1,0 +1,399 @@
+\documentclass[a4paper, 12pt]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}  % ngerman for German
+
+\usepackage{lmodern}  % nicer font
+\usepackage{gensymb}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{nicefrac}  % nicer inline fractions
+\usepackage{listings}
+\usepackage{enumerate}
+\usepackage{booktabs}  % nicer tables (e.g. \toprule)
+\usepackage{siunitx}  % easy handling of value + unit (e.g. \SI{10}{\pF})
+% \sisetup{}  % configure siunitx (e.g. locale = DE)
+\usepackage{verbatim}
+\usepackage{subcaption}  % captions for subplots
+\usepackage[european, siunitx]{circuitikz}  % draw circuit diagrams
+\usepackage{enumitem}
+\setlist[itemize]{label=\rule[0.5ex]{0.6ex}{0.6ex}} % nice black squares for itemize environments
+\usepackage{graphicx}
+\graphicspath{{./figures/}}
+
+\usepackage{geometry}
+\geometry{%
+	left   = 2.5cm,
+	right  = 2.5cm,
+	top    = 3cm,
+	bottom = 3cm
+}
+
+\usepackage[  % ieee style citations (e.g. [1])
+	backend     = biber,
+	maxbibnames = 99,
+	autocite    = footnote,
+	style	    = ieee,
+	citestyle   = numeric-comp,
+	doi=false, isbn=false
+]{biblatex}
+\addbibresource{bibliography/bibliography.bib}
+
+\usepackage[hang]{footmisc}
+\renewcommand{\hangfootparindent}{2em} 
+\renewcommand{\hangfootparskip}{2em}
+\renewcommand{\footnotemargin}{0.00001pt}
+\renewcommand{\footnotelayout}{\hspace{2em}}
+
+% last imports! Modify Title and author
+\usepackage[bookmarksopen,colorlinks,citecolor=black,linkcolor=black, urlcolor = black]{hyperref}
+% after hyperref! 
+% e.g. \cref{label} or \Cref(label) for captial letter
+\usepackage[noabbrev, nameinlink]{cleveref} 
+
+% add missing hyphenations
+\hyphenation{im-ple-men-ta-tions}
+
+\title{Exercise 1: Canny Edge Detector}
+\author{
+  Max Tamussino, 01611815
+}
+\date{\today}
+
+
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+\pagebreak
+
+\section{Gaussian blurring parameter $\sigma$}
+This experiment deals with the effects of changing the parameter $\sigma$ of gaussian blurring on different steps of the canny edge detection process. In \cref{fig:original}, the input for the following experiments is shown. The red line is explained in \cref{subsec:intensities}.
+
+\begin{figure} [h!]
+	\centering
+	\includegraphics[width=0.3\textwidth]{Original_marked.png}
+	\caption{The original greyscale image used for this experiment}
+	\label{fig:original}
+\end{figure}
+
+\subsection{Kernel widths}
+Gaussian filters provide smoother and better results than average filters. The kernel size however must be sufficient to approximate a gaussian distribution, otherwise significant parts of the curve are cut away and the filter behaves like an average filter. This relationship introduces the need for larger kernel sizes if the parameter $\sigma$ is increased. Using $\sigma = 3$, the correct kernel width can be calculated to be
+
+\begin{equation}
+W = 2 \cdot \lfloor 3 \cdot \sigma \rceil + 1 = 19.
+\end{equation}
+
+Larger kernels therefore lead to much higher computational cost. However, the effect of smaller kernel widths is significant, especially for larger values of $\sigma$. In \cref{fig:kernels}, this is shown for $\sigma = 3$. The blurring filter using $W=3$ performes visibly worse than the one using the correct kernel size $W=19$. Reduced functionality can also be observed for $W=9$, but the difference to the correct kernel size may be neglectable for some resource-constrained applications.
+
+\begin{figure} [h!]
+	\centering
+	\begin{subfigure}[b]{0.25\textwidth}
+		\includegraphics[width=\textwidth]{Blurred_sigma3_kernelwidth3.png}
+		\centering
+		\subcaption{$W=3$}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.25\textwidth}
+		\includegraphics[width=\textwidth]{Blurred_sigma3_kernelwidth9.png}
+		\centering
+		\subcaption{$W=9$}
+		\label{fig:kernels9}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.25\textwidth}
+		\includegraphics[width=\textwidth]{Blurred_sigma3_kernelwidth19.png}
+		\centering
+		\subcaption{$W=19$}
+		\label{fig:kernels19}
+	\end{subfigure}
+	\caption{Blurred image with $\sigma=3$ and different kernel widths $W$}
+	\label{fig:kernels}
+\end{figure}
+
+\subsection{Pixel intensities} \label{subsec:intensities}
+In \cref{fig:sigmas_intensities}, the intensities of the pixels along row $300$ of \cref{fig:original} are plotted. The smoothing effect of the gaussian filter increases with the value of $\sigma$ used. Noise is reduced significantly, while significant changes in intensity are smoothed out only, which will be corrected during non-maxima suppression.
+
+\begin{figure} [h!]
+	\centering
+	\begin{subfigure}[b]{0.35\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{Row_inten_original.png}
+		\subcaption{Original}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.35\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{Row_inten_sigma1.png}
+		\subcaption{$\sigma=1$}
+	\end{subfigure}
+	\vskip\baselineskip
+	\begin{subfigure}[b]{0.35\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{Row_inten_sigma2.png}
+		\subcaption{$\sigma=2$}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.35\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{Row_inten_sigma3.png}
+		\subcaption{$\sigma=3$}
+	\end{subfigure}
+	\caption{Effect of $\sigma$ in gaussian blurring on pixel intensities along a pixel row}
+	\label{fig:sigmas_intensities}
+\end{figure}
+
+\subsection{Non-maxima suppression}
+As the gradient function amplifies noise, it is important to smooth the image before applying the sobel filter. Also, by smoothing the image with a gaussian filter, the overall edge strength is reduced and insignificant edges can be removed. The effect of different values of $\sigma$ can be observed in \cref{fig:sigmas_nonmax}.
+
+\begin{figure} [h!]
+	\centering
+	\begin{subfigure}[b]{0.25\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{Edges_sigma1.png}
+		\subcaption{$\sigma=1$}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.25\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{Edges_sigma2.png}
+		\subcaption{$\sigma=2$}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.25\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{Edges_sigma3.png}
+		\subcaption{$\sigma=3$}
+	\end{subfigure}
+	\caption{Image after blurring using different values for $\sigma$ followed by non-maxima suppression}
+	\label{fig:sigmas_nonmax}
+\end{figure}
+
+\subsection{Hysteresis thresholding} \label{subsec:thres}
+The effect of noise reduction by gaussian blurring can also be observed after hysteresis thresholding. In \cref{fig:sigmas_hysteresis}, the result of different values for $\sigma$ is shown. Using constant values for $t_1=0.1$ and $t_2=0.3$, the removal of insignificant edges is obvious at $\sigma=3$. Interestingly, stronger gaussian blurring even adds an edge in the right picture: The back of the hat only appears there. Because of the superior performance in this step, $\sigma=3$ is chosen as a standard value for the next experiments.
+
+\begin{figure} [h!]
+	\centering
+	\begin{subfigure}[b]{0.25\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{Canny_edges_sigma1.png}
+		\subcaption{$\sigma=1$}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.25\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{Canny_edges_sigma2.png}
+		\subcaption{$\sigma=2$}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.25\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{Canny_edges_sigma3.png}
+		\subcaption{$\sigma=3$}
+	\end{subfigure}
+	\caption{Image after blurring using different values for $\sigma$ followed by non-maxima suppression and hysteresis thresholding}
+	\label{fig:sigmas_hysteresis}
+\end{figure}
+
+\section{Hysteresis thresholding}
+This experiment investigates the influence of the parameters $t_1$ and $t_2$ used during hysteresis thresholding. As stated in \cref{subsec:thres}, the gaussian blurring parameter is set to $\sigma=3$ for this experiment.
+
+\subsection{Parameters $t_1$ and $t_2$}
+The influence of the lower threshold $t_1$ on the result is depicted in \cref{fig:hyst_t1}. For a fixed $t_2=0.3$, increasing $t_1$ shortens detected edges and removes insignificant parts. The higher threshold $t_2$ however removes more and more whole edges as it is increased. In \cref{fig:hyst_t2}, this effect can be observed while the lower threshold is fixed to $t_1=0.2$. For $t_2=0.2$, a lot of unwanted edge fragments appear, whereas for $t_2=0.5$ too many edges seem to be eliminated by the algorithm.
+
+\begin{figure} [h!]
+	\centering
+	\begin{subfigure}[b]{0.2\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{Canny_edges_t1=0.05_t2=0.3.png}
+		\subcaption{$t_1=0.05$}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.2\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{Canny_edges_t1=0.1_t2=0.3.png}
+		\subcaption{$t_1=0.1$}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.2\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{Canny_edges_t1=0.2_t2=0.3.png}
+		\subcaption{$t_1=0.2$}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.2\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{Canny_edges_t1=0.3_t2=0.3.png}
+		\subcaption{$t_1=0.3$}
+	\end{subfigure}
+	\caption{Hysteresis thresholding applied with $t_2=0.3$ and different values for $t_1$}
+	\label{fig:hyst_t1}
+\end{figure}
+
+\begin{figure} [h!]
+	\centering
+	\begin{subfigure}[b]{0.2\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{Canny_edges_t1=0.2_t2=0.2.png}
+		\subcaption{$t_2=0.2$}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.2\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{Canny_edges_t1=0.2_t2=0.3.png}
+		\subcaption{$t_2=0.3$}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.2\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{Canny_edges_t1=0.2_t2=0.4.png}
+		\subcaption{$t_2=0.4$}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.2\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{Canny_edges_t1=0.2_t2=0.5.png}
+		\subcaption{$t_2=0.5$}
+	\end{subfigure}
+	\caption{Hysteresis thresholding applied with $t_1=0.2$ and different values for $t_2$}
+	\label{fig:hyst_t2}
+\end{figure}
+
+\subsection{Effects on different images} \label{subsec:static}
+If hysteresis thresholding is applied to different images, the results might vary in quality. The use of same static values can lead to the detection of a very high or low number of edges, depending on the structure of the image. In \cref{fig:hyst_diff_static}, the algorithm is applied to three different images using $t_1=0.2$ and $t_2=0.4$. There is a big difference in the number of detected edges in the resulting images, indicating that static threshold selection is not suitable for very different environments. However, in some situations, it might be the right choice. For example, product inspection in a factory setting does not require the algorithm to adapt to different environments. 
+
+\begin{figure} [h!]
+	\centering
+	\begin{subfigure}[b]{0.2\textwidth}
+		\centering
+		\includegraphics[height=5cm]{2_2_CannyStatic_rubens.png}
+		\subcaption{Painting}
+	\end{subfigure}
+	\hfill
+	\begin{subfigure}[b]{0.2\textwidth}
+		\centering
+		\includegraphics[height=5cm]{2_2_CannyStatic_beardman.png}
+		\subcaption{Bearded man}
+	\end{subfigure}
+	\hfill
+	\begin{subfigure}[b]{0.4\textwidth}
+		\centering
+		\includegraphics[height=5cm]{2_2_CannyStatic_parliament.png}
+		\subcaption{Building}
+	\end{subfigure}
+	\caption{Hysteresis thresholding applied to different images using $t_1=0.2$ and $t_2=0.4$}
+	\label{fig:hyst_diff_static}
+\end{figure}
+
+\subsection{Automatic threshold selection}
+To adapt the edge detection algorithm to different environments, edges must be selected according to their significance compared to other edges in the image. Results of an implementation are shown in \cref{fig:hyst_diff_dynamic}. Using this, in all images a similar amount of edges is detected.
+
+\begin{figure} [h!]
+	\centering
+	\begin{subfigure}[b]{0.2\textwidth}
+		\centering
+		\includegraphics[height=5cm]{2_3_CannyAuto_rubens.png}
+		\subcaption{Painting}
+	\end{subfigure}
+	\hfill
+	\begin{subfigure}[b]{0.2\textwidth}
+		\centering
+		\includegraphics[height=5cm]{2_3_CannyAuto_beardman.png}
+		\subcaption{Bearded man}
+	\end{subfigure}
+	\hfill
+	\begin{subfigure}[b]{0.4\textwidth}
+		\centering
+		\includegraphics[height=5cm]{2_3_CannyAuto_parliament.png}
+		\subcaption{Building}
+	\end{subfigure}
+	\caption{Automatic hysteresis thresholding ($10\%>t_2$, $25\%>t_1$)}
+	\label{fig:hyst_diff_dynamic}
+\end{figure}
+
+\subsection{Issues with automatic threshold selection}
+As described in \cref{subsec:static}, not every situation requires adaption to very different images. Automatic threshold selection might even lead to trouble in some applications. In the example mentioned above, visual product inspection might cause false alarms when looking for irregularities: If there are none present, the algorithm will set the thresholds lower to compensate - and find egdes, which are only amplified noise. Such situations might be prevented by providing boundaries for automatic threshold selection.
+
+\section{Adding gaussian noise}
+\subsection{Influence on edge detection} \label{subsec:noise}
+In this experiment, gaussian noise with zero mean and different standard deviations $\sigma_n$ is added to the input image. Afterwards, edge detection with automatic threshold selection is applied. The parameters are selected like before: Of the edges, the intensity of $10\%$ of them is $>t_2$ and the intensity of $25\%$ is $>t_1$. The results are depicted in \cref{fig:noise}. Gaussian noise with a standard deviation of $\sigma_n=0.5$ seriously impacts the detection of even the strongest edges in the image, while values of $\sigma_n \leq 0.2$ dont seem to make a significant difference.
+
+\begin{figure} [h!]
+	\centering
+	\begin{subfigure}[b]{0.19\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{3_1_NoiseOriginal_0.01.png}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.19\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{3_1_NoiseOriginal_0.05.png}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.19\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{3_1_NoiseOriginal_0.1.png}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.19\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{3_1_NoiseOriginal_0.3.png}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.19\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{3_1_NoiseOriginal_0.5.png}
+	\end{subfigure}
+	\vskip\baselineskip
+	\begin{subfigure}[b]{0.19\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{3_1_CannyOnNoise_0.01.png}
+		\subcaption{$\sigma_n=0.01$}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.19\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{3_1_CannyOnNoise_0.05.png}
+		\subcaption{$\sigma_n=0.05$}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.19\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{3_1_CannyOnNoise_0.1.png}
+		\subcaption{$\sigma_n=0.1$}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.19\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{3_1_CannyOnNoise_0.3.png}
+		\subcaption{$\sigma_n=0.3$}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.19\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{3_1_CannyOnNoise_0.5.png}
+		\subcaption{$\sigma_n=0.5$}
+	\end{subfigure}
+	\caption{Canny edge detection (bottom) applied to noisy images (top)}
+	\label{fig:noise}
+\end{figure}
+
+\subsection{Minimising noise influence}
+Noticing the severe effects of added gaussian noise to the input image in \cref{subsec:noise}, an attempt was made to improve edge detection results. Gaussian noise was fixed to $\sigma_n=0.5$ for this experiment, while parameters of the edge detection were varied slightly. In \cref{fig:minimisenoise}, the results are presented. The parameter $t_1$ was not varied in this experiment. Firstly, to remove the appearing noisy edges all over the result in \cref{fig:noise}, the influence of a higher threshold $t_2$ was examined. Secondly, stronger gaussian blurring was introduced. Combining these two parameter changes however lead to the removal of several significant edges. It can not generally be said which of these results is the best, because this depends on the application. It can however be concluded that the quality of the result of edge detection is strongly dependant on choosing the right parameters.
+
+\begin{figure} [h!]
+	\centering
+	\begin{subfigure}[b]{0.19\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{3_2_MinimiseNoise_sig3_low0.25_high0.10.png}
+		\subcaption{\\$\sigma=3$\\$10\%>t_2$}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.19\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{3_2_MinimiseNoise_sig3_low0.25_high0.05.png}
+		\subcaption{\\$\sigma=3$\\$5\%>t_2$}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.19\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{3_2_MinimiseNoise_sig3_low0.25_high0.03.png}
+		\subcaption{\\$\sigma=3$\\$3\%>t_2$}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.19\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{3_2_MinimiseNoise_sig4_low0.25_high0.10.png}
+		\subcaption{\\$\sigma=4$\\$10\%>t_2$}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.19\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{3_2_MinimiseNoise_sig4_low0.25_high0.05.png}
+		\subcaption{\\$\sigma=4$\\$5\%>t_2$}
+	\end{subfigure}
+	\caption{Attempt to minimise the effect of gaussian noise on edge detection by varying parameters $\sigma$ and $t_2$}
+	\label{fig:minimisenoise}
+\end{figure}
+
+\clearpage
+\sloppy
+\printbibliography
+
+\end{document}

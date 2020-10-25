@@ -10,7 +10,7 @@ MatrNr: 01611815
 import cv2
 import numpy as np
 
-def blur_gauss(img: np.array, sigma: float) -> np.array:
+def blur_gauss(img: np.array, sigma: float, kernel_width: int = -1) -> np.array:
     """ Blur the input image with a Gaussian filter with standard deviation of sigma.
 
     :param img: Grayscale input image
@@ -18,6 +18,9 @@ def blur_gauss(img: np.array, sigma: float) -> np.array:
 
     :param sigma: The standard deviation of the Gaussian kernel
     :type sigma: float
+
+    :param kernel_width: Optional parameter to manually set the kernel width (odd number)
+    :type kernel_width: int
 
     :return: Blurred image
     :rtype: np.array with shape (height, width) with dtype = np.float32 and values in the range [0.,1.]
@@ -27,7 +30,8 @@ def blur_gauss(img: np.array, sigma: float) -> np.array:
     img_blur = np.zeros(img.shape).astype("float32")
 
     # Kernel size is determined
-    kernel_width = 2 * round(3 * sigma) + 1
+    if kernel_width == -1 or kernel_width % 2 != 1:
+        kernel_width = 2 * round(3 * sigma) + 1
 
     # Offset is used to transform coordinate systems:
     # 0,0 1,0 2,0      -1,-1  0,-1  1,-1

@@ -100,7 +100,7 @@ def plot_row_intensities(img: np.array, row: int, title: str = "Intensities", sa
     # Convert the image to BGR so we can display the line in red which intensities we are using
     output_img = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
     output_img[row, ...] = (0, 0, 1)
-    show_image(output_img, "Imrow")
+    show_image(output_img, "Imrow", save_image)
 
 
 def plot_kernel(kernel: np.array, save_image: bool = False) -> None:

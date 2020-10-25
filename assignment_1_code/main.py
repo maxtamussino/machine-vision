@@ -25,12 +25,12 @@ from helper_functions import show_image
 if __name__ == '__main__':
 
     # Define behavior of the show_image function. You can change these variables if necessary
-    save_image = False
+    save_image = True
     matplotlib_plotting = False
 
     # Read image
     current_path = Path(__file__).parent
-    img_gray = cv2.imread(str(current_path.joinpath("image/circle.jpg")), cv2.IMREAD_GRAYSCALE)
+    img_gray = cv2.imread(str(current_path.joinpath("image/rubens.jpg")), cv2.IMREAD_GRAYSCALE)
     if img_gray is None:
         raise FileNotFoundError("Couldn't load image in " + str(current_path))
 
