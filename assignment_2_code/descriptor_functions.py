@@ -24,9 +24,7 @@ def patch_basic(patch: np.ndarray) -> np.ndarray:
     :rtype: np.ndarray with shape (1, patch_size^2)
     """
     ######################################################
-    # Write your own code here
-    return np.zeros((1, patch.size))  # Replace this line
-
+    return patch.flatten()
     ######################################################
 
 
@@ -126,7 +124,23 @@ def compute_descriptors(descriptor_func: Callable,
     :rtype: (np.ndarray, np.ndarray)
     """
     ######################################################
-    # Write your own code here
-    return np.zeros((10, 2)), np.zeros((10, patch_size*patch_size))  # Replace this line
+    interest_points = np.zeros((0, 2))
+    descriptors = np.zeros((0, patch_size*patch_size))
 
+    patch_rad = int((patch_size - 1) / 2)
+    for loc in locations:
+        x = int(loc[0])
+        y = int(loc[1])
+        if x < patch_rad or x > img.shape[0] - patch_rad:
+            # print("skipped x={} y={}".format(x, y))
+            continue
+        if y < patch_rad or y > img.shape[1] - patch_rad:
+            # print("skipped x={} y={}".format(x, y))
+            continue
+        patch = img[x - patch_rad:x + patch_rad + 1, y - patch_rad:y + patch_rad + 1]
+        descriptor = descriptor_func(patch)
+        interest_points = np.vstack((interest_points, [x, y]))
+        descriptors = np.vstack((descriptors, descriptor))
+
+    return interest_points, descriptors
     ######################################################
