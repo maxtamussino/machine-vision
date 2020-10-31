@@ -3,8 +3,8 @@
 
 """ Descriptor functions
 
-Author: FILL IN
-MatrNr: FILL IN
+Author: Max Tamussino
+MatrNr: 01611815
 """
 from typing import Callable
 

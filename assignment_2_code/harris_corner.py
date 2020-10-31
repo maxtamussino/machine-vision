@@ -3,8 +3,8 @@
 
 """ Corner detection with the Harris corner detector
 
-Author: FILL IN
-MatrNr: FILL IN
+Author: Max Tamussino
+MatrNr: 01611815
 """
 import numpy as np
 import cv2
@@ -47,8 +47,69 @@ def harris_corner(img, sigma1, sigma2, k, threshold):
     """
 
     ######################################################
-    # Write your own code here
-    output = np.ones(img.shape)  # Replace these lines
-    return output, output, output, output, output, output, output, output, output
+    # Create first gaussian kernel with sigma1
+    kernel_width1 = 2 * round(3 * sigma1) + 1
+    kernel = cv2.getGaussianKernel(kernel_width1, sigma1)  # (kernel_width x 1)
+    gauss1 = np.outer(kernel, kernel.transpose())  # (kernel_width x kernel_width)
+
+    # Apply blurring to input image
+    blurred = cv2.filter2D(img, -1, gauss1)
+
+    # Compute derivative and squares/products needed
+    i_x = np.gradient(blurred, axis=0)
+    i_y = np.gradient(blurred, axis=1)
+    i_xy = np.multiply(i_x, i_y)
+    i_xx = np.square(i_x)
+    i_yy = np.square(i_y)
+
+    # Create second gaussian kernel with sigma2
+    kernel_width2 = 2 * round(3 * sigma2) + 1
+    kernel = cv2.getGaussianKernel(kernel_width2, sigma2)  # (kernel_width x 1)
+    gauss2 = np.outer(kernel, kernel.transpose())  # (kernel_width x kernel_width)
+
+    # Apply blurring to the derivatives
+    g_xx = cv2.filter2D(i_xx, -1, gauss2)
+    g_yy = cv2.filter2D(i_yy, -1, gauss2)
+    g_xy = cv2.filter2D(i_xy, -1, gauss2)
+
+    # Compute value R for all entries: det(M)-k*trace(M)^2
+    # Note: M = ((g_xx, g_xy), (g_xy, g_yy))
+    # Note: det(M) = g_xx * g_yy - g_xy * g_xy
+    # Note: trace(M) = g_xx + g_yy
+    h_dense = np.multiply(g_xx, g_yy) - np.square(g_xy) - k * np.square(g_xx + g_yy)
+    h_dense /= np.max(h_dense)
+    h_dense = np.where(h_dense >= threshold, h_dense, 0)
+
+    # Create neighbour arrays to compare
+    north = np.roll(h_dense, 1, 0)
+    south = np.roll(h_dense, -1, 0)
+    west = np.roll(h_dense, -1, 1)
+    east = np.roll(h_dense, 1, 1)
+    northwest = np.roll(h_dense, (1, -1), (0, 1))
+    northeast = np.roll(h_dense, (1, 1), (0, 1))
+    southwest = np.roll(h_dense, (-1, -1), (0, 1))
+    southeast = np.roll(h_dense, (-1, 1), (0, 1))
+
+    # Decision tree: where h_dense is be greater than all neighbours, h_nonmax is 1
+    inter_1 = np.logical_and(h_dense >= north, h_dense > south)
+    inter_2 = np.logical_and(h_dense >= east, h_dense > west)
+    inter_3 = np.logical_and(h_dense >= northeast, h_dense > southwest)
+    inter_4 = np.logical_and(h_dense > northwest, h_dense >= southeast)
+    inter_5 = np.logical_and(inter_1, inter_2)
+    inter_6 = np.logical_and(inter_3, inter_4)
+    inter_7 = np.logical_and(inter_5, inter_6)
+    h_nonmax = np.where(inter_7, 1, 0)
+
+    # Filter coordinates where h_nonmax != 0
+    coordinates = np.argwhere(h_nonmax)
+
+    # Initialise array with additional column
+    corners = np.zeros((coordinates.shape[0], 3))
+
+    # Assign first two collumns with coordinates and third with value of R
+    corners[:, [0, 1]] = coordinates
+    corners[:, 2] = h_dense[coordinates[:, 0], coordinates[:, 1]]
+
+    return i_xx, i_yy, i_xy, g_xx, g_yy, g_xy, h_dense, h_nonmax, corners
 
     ######################################################

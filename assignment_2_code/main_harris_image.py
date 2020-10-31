@@ -18,6 +18,7 @@ from harris_corner import harris_corner
 from helper_functions import show_corners
 
 if __name__ == '__main__':
+    np.set_printoptions(precision=2, suppress=True)  # for debugging
     debug_corners = True  # <<< change to reduce output when you're done
     save_image = False
     img_file = 'desk/Image-00.jpg'

@@ -3,8 +3,8 @@
 
 """ Match descriptors in two images
 
-Author: FILL IN
-MatrNr: FILL IN
+Author: Max Tamussino
+MatrNr: 01611815
 """
 import numpy as np
 import cv2
