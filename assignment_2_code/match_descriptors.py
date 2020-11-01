@@ -26,7 +26,42 @@ def match_descriptors(descriptors_1: np.ndarray, descriptors_2: np.ndarray, best
     :rtype: np.ndarray with shape (k, 2) with k being the number of matches
     """
     ######################################################
-    # Write your own code here
-    return np.zeros((10, 2))  # Replace this line
+    # Empty array of matches
+    matches = np.zeros((0, 2)).astype(int)
 
+    # Keep track of index
+    index1 = -1
+    for descr1 in descriptors_1:
+        # Index tracking
+        index1 += 1
+        index2 = -1
+
+        # Save best & second best match (and index for the best)
+        best_index = -1
+        best_val = 1000
+        secondbest_val = 1000
+
+        for descr2 in descriptors_2:
+            # Index tracking
+            index2 += 1
+
+            # Calculate distance
+            new_val = np.linalg.norm(descr1 - descr2)
+
+            # Compare distance to best & second best
+            if new_val < best_val:
+                secondbest_val = best_val
+                best_val = new_val
+                best_index = index2
+            elif new_val < secondbest_val:
+                secondbest_val = new_val
+
+        # Only add to matches if best << second best
+        if best_val / secondbest_val < 0.8:
+            matches = np.vstack((matches, [index1, best_index]))
+
+    print("Image one: {} corners".format(descriptors_1.shape[0]))
+    print("Image two: {} corners".format(descriptors_2.shape[0]))
+    print("Matches: {}".format(matches.shape[0]))
+    return matches
     ######################################################

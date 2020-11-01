@@ -11,6 +11,7 @@ Tutors: machinevision@acin.tuwien.ac.at
 """
 from pathlib import Path
 
+import numpy as np
 from descriptor_functions import *
 from harris_corner import harris_corner
 from helper_functions import *
@@ -42,7 +43,7 @@ if __name__ == '__main__':
     img_gray_2 = img_gray_2.astype(np.float32) / 255.
 
     # Choose which descriptor to use by indexing into the cell array
-    descriptor_func_ind = 0
+    descriptor_func_ind = 4
 
     # descriptor function names
     descriptor_funcs = [patch_basic, patch_norm, patch_sort, patch_sort_circle, block_orientations]
