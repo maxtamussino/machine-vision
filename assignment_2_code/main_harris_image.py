@@ -19,15 +19,15 @@ from helper_functions import show_corners
 
 if __name__ == '__main__':
     np.set_printoptions(precision=2, suppress=True)  # for debugging
-    debug_corners = True  # <<< change to reduce output when you're done
-    save_image = False
+    debug_corners = False  # <<< change to reduce output when you're done
+    save_image = True
     img_file = 'desk/Image-00.jpg'
 
-    # parameters <<< try different settings!
-    sigma1 = 0.8
-    sigma2 = 1.5
-    k = 0.04
-    threshold = 0.01
+    # Parameters
+    sigma1 = 0.8      # 0.8  standard
+    sigma2 = 1.5      # 1.5  standard
+    k = 0.04          # 0.04 standard
+    threshold = 0.01  # 0.01 standard
 
     # Read image
     current_path = Path(__file__).parent

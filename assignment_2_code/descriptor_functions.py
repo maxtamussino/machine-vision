@@ -24,6 +24,7 @@ def patch_basic(patch: np.ndarray) -> np.ndarray:
     :rtype: np.ndarray with shape (1, patch_size^2)
     """
     ######################################################
+    # Create simple descriptor only containing patch values
     descriptor = patch.flatten()
     return descriptor
     ######################################################
@@ -39,6 +40,7 @@ def patch_norm(patch: np.ndarray) -> np.ndarray:
     :rtype: np.ndarray with shape (1, patch_size^2)
     """
     ######################################################
+    # Normalise the basic patch descriptor
     descriptor = patch_basic(patch) / np.max(patch)
     return descriptor
     ######################################################
@@ -54,6 +56,7 @@ def patch_sort(patch: np.ndarray) -> np.ndarray:
     :rtype: np.ndarray with shape (1, patch_size^2)
     """
     ######################################################
+    # Sort the normalised patch descriptor
     descriptor = np.sort(patch_norm(patch))
     return descriptor
     ######################################################
@@ -69,6 +72,7 @@ def patch_sort_circle(patch: np.ndarray) -> np.ndarray:
     :rtype: np.ndarray with shape (1, patch_size^2)
     """
     ######################################################
+    # Only consider values inside a circle mask and use sorted descriptor
     descriptor = np.where(circle_mask(patch.shape[0]), patch, 0)
     descriptor = patch_sort(descriptor)
     return descriptor
@@ -90,16 +94,38 @@ def block_orientations(patch: np.ndarray) -> np.ndarray:
     """
     ######################################################
     descriptor = np.zeros((1, 0))
+
+    # Calculate gradients
     grad_x = np.gradient(patch, axis=0)
     grad_y = np.gradient(patch, axis=1)
+    grad_mag = np.sqrt(np.square(grad_x) + np.square(grad_y))
+
+    # Calculate orientations
     orient = np.arctan2(grad_y, grad_x)
+
+    # Prepare bins for value characterisation
     bins = np.arange(-np.pi, np.pi, 2*np.pi/8)
+
+    # Iterate over the blocks
     for i in range(0, 4):
         for j in range(0, 4):
-            sub_patch = np.digitize(orient[i * 4:(i + 1) * 4, j * 4:(j + 1) * 4], bins)
-            histogram = np.zeros((1, 8)).astype(int)
+            # Create sub patch and characterise content according to bins
+            sub_patch_grad_mag = grad_mag[i * 4:(i + 1) * 4, j * 4:(j + 1) * 4]
+            sub_patch_orient = orient[i * 4:(i + 1) * 4, j * 4:(j + 1) * 4]
+            sub_patch_orient_binned = np.digitize(sub_patch_orient, bins)
+
+            # Create histogram
+            histogram = np.zeros((1, 8))
             for k in range(0, 8):
-                histogram[0, k] = np.count_nonzero(sub_patch == k)
+                # Histogram entry is the sum of gradient magnitudes found in that bin
+                histogram[0, k] = np.sum(np.multiply(np.where(sub_patch_orient_binned == k, 1, 0), sub_patch_grad_mag))
+
+            # Normalise histogram by gradient magnitude sum
+            gradient_sum = np.sum(sub_patch_grad_mag)
+            if gradient_sum != 0:
+                histogram = histogram / gradient_sum
+
+            # Add histogram to the descriptor
             descriptor = np.hstack((descriptor, histogram))
 
     return descriptor

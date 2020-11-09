@@ -30,35 +30,22 @@ def match_descriptors(descriptors_1: np.ndarray, descriptors_2: np.ndarray, best
     matches = np.zeros((0, 2)).astype(int)
 
     # Keep track of index
-    index1 = -1
-    for descr1 in descriptors_1:
+    index = -1
+    for desc in descriptors_1:
         # Index tracking
-        index1 += 1
-        index2 = -1
+        index += 1
 
-        # Save best & second best match (and index for the best)
-        best_index = -1
-        best_val = 1000
-        secondbest_val = 1000
+        # Calculate distance from the descriptors of image 2
+        distances = np.linalg.norm(descriptors_2 - desc, axis=1)
 
-        for descr2 in descriptors_2:
-            # Index tracking
-            index2 += 1
-
-            # Calculate distance
-            new_val = np.linalg.norm(descr1 - descr2)
-
-            # Compare distance to best & second best
-            if new_val < best_val:
-                secondbest_val = best_val
-                best_val = new_val
-                best_index = index2
-            elif new_val < secondbest_val:
-                secondbest_val = new_val
+        # Save the best value, its index and the second best value
+        best_index = distances.argmin()
+        best_val = distances[best_index]
+        secondbest_val = min(np.delete(distances, best_index))
 
         # Only add to matches if best << second best
         if best_val / secondbest_val < 0.8:
-            matches = np.vstack((matches, [index1, best_index]))
+            matches = np.vstack((matches, [index, best_index]))
 
     print("Image one: {} corners".format(descriptors_1.shape[0]))
     print("Image two: {} corners".format(descriptors_2.shape[0]))

@@ -7,6 +7,7 @@
 \usepackage{lmodern}  % nicer font
 \usepackage{gensymb}
 \usepackage{amsmath}
+\DeclareMathOperator{\Tr}{Tr} % trace operator
 \usepackage{amssymb}
 \usepackage{nicefrac}  % nicer inline fractions
 \usepackage{listings}
@@ -53,9 +54,9 @@
 \usepackage[noabbrev, nameinlink]{cleveref} 
 
 % add missing hyphenations
-\hyphenation{im-ple-men-ta-tions}3
+\hyphenation{im-ple-men-ta-tions}
 
-\title{Exercise 2: XXX}
+\title{Exercise 2: Interest Points and Descriptors}
 \author{
   Max Tamussino, 01611815
 }
@@ -69,7 +70,208 @@
 \tableofcontents
 \pagebreak
 
-%TODO content
+\section{Harris corner detection}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.8\textwidth]{original.png}
+	\caption{Original picture with detected corners displayed in red, using the standard parameters $\sigma_1=0.8$, $\sigma_2=1.5$, $k=0.04$ and $R_{T}=0.01$}
+	\label{fig:original}
+\end{figure}
+
+This experiment is conducted using the image depicted in \cref{fig:original}. Firstly, the influence of the parameters $\sigma_1$, $\sigma_2$ and $k$ is examined. Secondly, its dependence on scale variance it briefly discussed.
+
+\subsection{Gaussian blurring before derivation ($\sigma_1$)}
+The initial Gaussian filtering removes noise and therefore prevents the detection of insignificant corners. When varying the parameter $\sigma_1$, it can be observed that it directly influences the number of corners found. The more it is increased, the more insignificant corners are ignored. \Cref{fig:sigma1} shows this relationship by displaying detected corners for different values of $\sigma_1$. Interestingly, overly strong Gaussian filtering leads to a visible displacement of the corners.
+
+\begin{figure}[h!]
+	\centering
+	\begin{subfigure}[b]{0.49\textwidth}
+		\centering
+		\includegraphics[width=\textwidth, trim={1cm, .5cm, 1cm, .5cm}, clip]{corners_sigma1_0_2.png}
+		\caption{$\sigma_1=0.2$, corners: 303}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.49\textwidth}
+		\centering
+		\includegraphics[width=\textwidth, trim={1cm, .5cm, 1cm, .5cm}, clip]{corners_sigma1_4.png}
+		\caption{$\sigma_1=4$, corners: 127}
+	\end{subfigure}
+	\caption{Detected corners using different values for $\sigma_1$ ($\sigma_2=1.5$, $k=0.04$ and $R_{T}=0.01$)}
+	\label{fig:sigma1}
+\end{figure}
+
+\subsection{Gaussian blurring after derivation ($\sigma_2$)}
+Gaussian filtering after the derivation eliminates the need for a complicated window function, as it is implicitly used. This reduces increased noise of the derivation process. \Cref{fig:sigma2} shows that the parameter $\sigma_2$ has similar effect on detected corners as $\sigma_1$: Small values fail to ignore insignificant corners, while large values filter too many of them and lead to displacement.
+
+\begin{figure}[h!]
+	\centering
+	\begin{subfigure}[b]{0.49\textwidth}
+		\centering
+		\includegraphics[width=\textwidth, trim={1cm, .5cm, 1cm, .5cm}, clip]{corners_sigma2_1.png}
+		\caption{$\sigma_2=1$, corners: 321}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.49\textwidth}
+		\centering
+		\includegraphics[width=\textwidth, trim={1cm, .5cm, 1cm, .5cm}, clip]{corners_sigma2_3.png}
+		\caption{$\sigma_2=3$, corners: 193}
+	\end{subfigure}
+	\caption{Detected corners using different values for $\sigma_2$ ($\sigma_1=0.8$, $k=0.04$ and $R_{T}=0.01$)}
+	\label{fig:sigma2}
+\end{figure}
+
+\subsection{Dependence on scale}
+For this experiment, another image available in different scales was used. The scale dependence can be observed by looking at the very different corners detected in \Cref{fig:scales}. Especially in the region of the door, none of the detected corners are matching for two different scales.
+
+\begin{figure}[h!]
+	\centering
+	\begin{subfigure}[b]{0.4\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{corners_scale_big.jpg}
+		\caption{XXX}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.4\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{corners_scale_small.jpg}
+		\caption{XXX}
+	\end{subfigure}
+	\caption{Detected corners for different scales ($\sigma_1=0.8$, $\sigma_2=1.5$, $k=0.04$ and $R_{T}=0.01$)}
+	\label{fig:scales}
+\end{figure}
+
+\subsection{Implications of scale dependence}
+Scale dependant corner detectors are greatly limited in applications, where the camera system is moving. Not being able to detect the same interest points from two different distances may limit the ability to navigate greatly. This is why scale invariance is highly beneficial in most applications.
+
+\subsection{The parameter $k$}
+The effect of varying the parameter $k$ is very difficult to observe. Very small values tend to introduce additional corners, while large values cause displacement of the corners. Approaching $k=0.25$, the corner detector shows a sudden decline in detected corners.
+
+\clearpage
+\section{Matching corners using patch descriptors}
+For experiments in this section, the Harris corner detection was used with its standard parameters $\sigma_1=1$, $\sigma_2=2$, $k=0.04$ and $R_{T}=0.01$. The patch size for basic patch descriptors was set to $9$, while block descriptors were used with patch size $16$.
+
+\subsection{Patch descriptor size}
+The patch descriptor size is of high significance when using basic patch descriptors. This is also shown in \Cref{fig:patchsize}. Increased patch size results in more matches, which are additionally of better quality. The downside of larger patch sizes is the computation time needed.
+
+\begin{figure}[h!]
+	\centering
+	\begin{subfigure}[b]{0.7\textwidth}
+		\centering
+		\includegraphics[width=\textwidth, trim={.4cm, 3cm, .2cm, 3cm}, clip]{matches_patchsize_3.png}
+		\caption{Result with patch size 3 (28 matches)}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.7\textwidth}
+		\centering
+		\includegraphics[width=\textwidth, trim={.4cm, 3cm, .2cm, 3cm}, clip]{matches_patchsize_9.png}
+		\caption{Result with patch size 9 (48 matches)}
+	\end{subfigure}
+	\caption{Matching result using basic patch descriptors with different patch sizes}
+	\label{fig:patchsize}
+\end{figure}
+
+\subsection{Influence of rotation}
+For basic patch descriptors only using unaltered intensity values, rotation hat great influence on the quality of the result. While small rotations like the one in \Cref{fig:rot10} are tolerated, rotations above \SI{30}{\degree} like in \Cref{fig:rot30} significantly decrease obtained match quality.
+
+\begin{figure}[h!]
+	\centering
+	\begin{subfigure}[b]{0.7\textwidth}
+		\centering
+		\includegraphics[width=\textwidth, trim={.4cm, 2.5cm, .2cm, 2cm}, clip]{matches_rotate_10.png}
+		\label{fig:rot10}
+		\caption{Rotation \SI{10}{\degree}}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.7\textwidth}
+		\centering
+		\includegraphics[width=\textwidth, trim={.4cm, 2cm, .2cm, 2cm}, clip]{matches_rotate_20.png}
+		\label{fig:rot20}
+		\caption{Rotation \SI{20}{\degree}}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.7\textwidth}
+		\centering
+		\includegraphics[width=\textwidth, trim={.4cm, 2cm, .2cm, 1.5cm}, clip]{matches_rotate_30.png}
+		\label{fig:rot30}
+		\caption{Rotation \SI{30}{\degree}}
+	\end{subfigure}
+	\caption{Matching result using basic patch descriptors with different patch sizes}
+	\label{fig:rotation}
+\end{figure}
+
+\subsection{Normalisation of descriptors}
+Normalising the descriptors is of great advantage, when the two different pictures are taken using different exposure. The totally different levels of intensity make it impossible for the basic patch descriptor to match the corners, while normalised descriptors cancel this effect. In \Cref{fig:normalisation}, this is clearly visible.
+
+\begin{figure}[h!]
+	\centering
+	\begin{subfigure}[b]{0.7\textwidth}
+		\centering
+		\includegraphics[width=\textwidth, trim={.4cm, 3cm, .2cm, 3cm}, clip]{matches_cl.png}
+		\caption{Result without normalisation}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.7\textwidth}
+		\centering
+		\includegraphics[width=\textwidth, trim={.4cm, 3cm, .2cm, 3cm}, clip]{matches_cl_norm.png}
+		\caption{Result with normalisation}
+	\end{subfigure}
+	\caption{Matching result for different lighting using basic and normalised descriptors}
+	\label{fig:normalisation}
+\end{figure}
+
+\subsection{Sorting of descriptor values}
+Sorting the descriptor values is aimed at resolving the issue with rotation of the image. By sorting, the position of the values in the descriptors do not matter any more and rotation should be handled more accurately. Additionally, the patch descriptor is imposed by a circular mask to circumvent new intensity values being introduced into the descriptor by rotation. The results can be compared in \Cref{fig:sorting}. While the effect of sorting can be verified by an increased number of matches, the circular mask did not show improved results.
+
+\begin{figure}[h!]
+	\centering
+	\begin{subfigure}[b]{0.7\textwidth}
+		\centering
+		\includegraphics[width=\textwidth, trim={.4cm, 1.5cm, .2cm, 1.5cm}, clip]{matches_sort_basic.png}
+		\label{fig:basic}
+		\caption{Basic patch descriptor (18 matches)}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.7\textwidth}
+		\centering
+		\includegraphics[width=\textwidth, trim={.4cm, 1.5cm, .2cm, 1.5cm}, clip]{matches_sort_sorted.png}
+		\label{fig:sorted}
+		\caption{Sorted patch descriptor (23 matches)}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.7\textwidth}
+		\centering
+		\includegraphics[width=\textwidth, trim={.4cm, 1.5cm, .2cm, 1.5cm}, clip]{matches_sort_circular.png}
+		\label{fig:circular}
+		\caption{Circular patch descriptor (23 matches)}
+	\end{subfigure}
+	\caption{Matching result for \SI{45}{\degree} rotation using basic, sorted and circular patch descriptors}
+	\label{fig:sorting}
+\end{figure}
+
+\clearpage
+\subsection{Block descriptors}
+Block descriptors use histograms of directions in subpatches of the original patch. At greater image displacements than in previous experiments, block descriptors still produce excellent matching results. A comparison is depicted in \Cref{fig:block-far}. Furthermore, as this method does not rely on intensities, it performs well in different lighting conditions - this can be observed in \Cref{fig:block-exposure}, which is to be compared to \Cref{fig:normalisation}. Block descriptors outperform the normalised basic descriptors significantly.
+
+\begin{figure}[h!]
+	\centering
+	\begin{subfigure}[b]{0.7\textwidth}
+		\centering
+		\includegraphics[width=\textwidth, trim={.4cm, 3cm, .2cm, 3cm}, clip]{matches_block_far_basic.png}
+		\caption{Result using basic descriptors}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.7\textwidth}
+		\centering
+		\includegraphics[width=\textwidth, trim={.4cm, 3cm, .2cm, 3cm}, clip]{matches_block_far_block.png}
+		\caption{Result using block descriptors}
+	\end{subfigure}
+	\caption{Matching result for large displacement using basic and block descriptors}
+	\label{fig:block-far}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.7\textwidth, trim={.4cm, 3cm, .2cm, 3cm}, clip]{matches_block_exposure.png}
+	\label{fig:block-exposure}
+	\caption{Result for different exposure matching (compare to \Cref{fig:normalisation})}
+\end{figure}
+
+\subsection{Using histograms}
+Methods using histograms to generate descriptors for detected corners are various types of noise, because single values cannot change the overall result of a histogram. Using histograms of orientations additionally reduces intensity dependence, which is suitable for applications with very diverse lighting conditions.
+ 
+\subsection{Using sub-patches}
+Techniques using descriptors for sub-patches are particularly resistant to changes of the camera angle. This is due to the minimised change in the sub-patches close to the axis of the camera rotation. The advantage becomes apparent when trying to match images which were generated from the same point in space, varying only the camera angle. Additionally, using sub-patches increases the overall size of the descriptor, which leads to better matching results at the cost of increased computation time. 
 
 \clearpage
 \sloppy

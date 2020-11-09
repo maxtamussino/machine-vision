@@ -90,11 +90,11 @@ def harris_corner(img, sigma1, sigma2, k, threshold):
     southwest = np.roll(h_dense, (-1, -1), (0, 1))
     southeast = np.roll(h_dense, (-1, 1), (0, 1))
 
-    # Decision tree: where h_dense is be greater than all neighbours, h_nonmax is 1
+    # Decision tree: where h_dense is greater than all neighbours, h_nonmax is 1
     inter_1 = np.logical_and(h_dense >= north, h_dense > south)
     inter_2 = np.logical_and(h_dense >= east, h_dense > west)
     inter_3 = np.logical_and(h_dense >= northeast, h_dense > southwest)
-    inter_4 = np.logical_and(h_dense > northwest, h_dense >= southeast)
+    inter_4 = np.logical_and(h_dense >= southeast, h_dense > northwest)
     inter_5 = np.logical_and(inter_1, inter_2)
     inter_6 = np.logical_and(inter_3, inter_4)
     inter_7 = np.logical_and(inter_5, inter_6)
@@ -106,10 +106,12 @@ def harris_corner(img, sigma1, sigma2, k, threshold):
     # Initialise array with additional column
     corners = np.zeros((coordinates.shape[0], 3))
 
-    # Assign first two collumns with coordinates and third with value of R
+    # Assign first two columns with coordinates and third with value of R
     corners[:, [0, 1]] = coordinates
     corners[:, 2] = h_dense[coordinates[:, 0], coordinates[:, 1]]
 
-    return i_xx, i_yy, i_xy, g_xx, g_yy, g_xy, h_dense, h_nonmax, corners
+    # Print number of found corners
+    print(coordinates.shape[0])
 
+    return i_xx, i_yy, i_xy, g_xx, g_yy, g_xy, h_dense, h_nonmax, corners
     ######################################################
