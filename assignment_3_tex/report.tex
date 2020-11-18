@@ -1,0 +1,164 @@
+\documentclass[a4paper, 12pt]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}  % ngerman for German
+
+\usepackage{lmodern}  % nicer font
+\usepackage{gensymb}
+\usepackage{amsmath}
+\DeclareMathOperator{\Tr}{Tr} % trace operator
+\usepackage{amssymb}
+\usepackage{nicefrac}  % nicer inline fractions
+\usepackage{listings}
+\usepackage{enumerate}
+\usepackage{booktabs}  % nicer tables (e.g. \toprule)
+\usepackage{siunitx}  % easy handling of value + unit (e.g. \SI{10}{\pF})
+% \sisetup{}  % configure siunitx (e.g. locale = DE)
+\usepackage{verbatim}
+\usepackage{subcaption}  % captions for subplots
+\usepackage[european, siunitx]{circuitikz}  % draw circuit diagrams
+\usepackage{enumitem}
+\setlist[itemize]{label=\rule[0.5ex]{0.6ex}{0.6ex}} % nice black squares for itemize environments
+\usepackage{graphicx}
+\graphicspath{{./figures/}}
+
+\usepackage{geometry}
+\geometry{%
+	left   = 2.5cm,
+	right  = 2.5cm,
+	top    = 3cm,
+	bottom = 3cm
+}
+
+\usepackage[  % ieee style citations (e.g. [1])
+	backend     = biber,
+	maxbibnames = 99,
+	autocite    = footnote,
+	style	    = ieee,
+	citestyle   = numeric-comp,
+	doi=false, isbn=false
+]{biblatex}
+\addbibresource{bibliography/bibliography.bib}
+
+\usepackage[hang]{footmisc}
+\renewcommand{\hangfootparindent}{2em} 
+\renewcommand{\hangfootparskip}{2em}
+\renewcommand{\footnotemargin}{0.00001pt}
+\renewcommand{\footnotelayout}{\hspace{2em}}
+
+% last imports! Modify Title and author
+\usepackage[bookmarksopen,colorlinks,citecolor=black,linkcolor=black, urlcolor = black]{hyperref}
+% after hyperref! 
+% e.g. \cref{label} or \Cref(label) for captial letter
+\usepackage[noabbrev, nameinlink]{cleveref} 
+
+% add missing hyphenations
+\hyphenation{im-ple-men-ta-tions}
+
+\title{Exercise 3: Object detection using SIFT and GHT}
+\author{
+  Max Tamussino, 01611815
+}
+\date{\today}
+
+
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+\pagebreak
+
+\section{Configuration clustering} \label{sec:config-cluster}
+Every SIFT match contributes one vote for a possible configuration in the scene image. Because SIFT yields large numbers of matches, the resulting number of matches has to be reduced to the configurations which should be found. In order to achieve this, a clustering algorithm was applied. The four-dimensional configuration space of position ($x$ and $y$), scale ($S$) and orientation ($\alpha$) showed inferior handling of orientations around $\alpha=\pm \pi$, because the clustering algorithm separated orientations around $\alpha=+\pi$ and those around $\alpha=-\pi$. Therefore, the configuration space was expanded. Instead of clustering the orientation itself, its two-dimensional complex representation $o_1=\sin{\alpha}$ and $o_2=\cos{\alpha}$ was used. This resulted in a five-dimensional configuration space, in which the orientation is represented by a closed circle, circumventing any issues with the transition around $\alpha=\pm \pi$. Additionally, the dimensions $x$, $y$ and $S$ were normalised to the range $[0;1]$ by dividing to the maximum occurring value respectively. The last two dimensions $o_1$ and $o_2$, which naturally are in the range $[-1;1]$, were separately normalised to the range $[-0.5;0.5]$. This is necessary to use the same clustering parameters for different images.
+
+On the normalised configuration space, the clustering algorithm DBSCAN was used. DBSAN applies to the given problem very well, as outlier configurations with a distance $d > \varepsilon$ are not included in clusters, while dense areas counting $n > samples_{min}$ configurations are combined into a single cluster. Of each resulting cluster, the median configuration is chosen and denormalised. The use of the median is resistant against outliers within the clusters. Additional processing of the detected configurations was omitted, as the examined scenes did already yield exactly one satisfying configuration per detectable object.
+
+\section{Detection results}
+The object depicted in \Cref{fig:object} is to be found in different scenes, each composed of multiple different objects. This section discusses the outcome of each scene. The clustering algorithm DBSCAN was used the parameters $\varepsilon=0.1$ and $samples_{min}=18$, which proved to yield reasonable results for all examined scenes. For the match distance threshold described in \Cref{sec:threshold}, $t=270$ was used.
+
+In \Cref{fig:result-1}, the rotated object position particularly benefited from the configuration space expansion, as $\alpha \approx \pm \pi$. Nevertheless, a small error can be observed in the detected scale.
+
+The second scene in \Cref{fig:result-2} provides multiple instances of the detectable object, each being partly hidden by other objects. Generally, the algorithm performs well even under these conditions. The right object however shows a significant displacement, which might be a result of the specific covered area, which typically yields the most SIFT matches.
+
+Similar to \Cref{fig:result-1}, in the scene depicted in \Cref{fig:result-3} the right object in this scene would show two separate clusters without the configuration space expansion. The used algorithm however detects the orientation very accurately and yields only a single configuration. The slightly broader detected box of the left object in this scene may be due to rotation of the object, which is not inside the plane of the provided image.
+
+In \Cref{fig:result-4}, two separate challenges are present: One is the out-of-plane rotation of the left object, resulting in noticeable displacement of the detection. The second challenge is the small object in the background, which yields less matches than the ones in the foreground. The detection of this object required a separate parameter set with significantly reduced $samples_{min}$, until the configuration space expansion was applied. It is however not known why the expansion improved the detection of this object.
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.6\textwidth]{object.png}
+	\caption{The object to be found in different scenes}
+	\label{fig:object}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.85\textwidth]{Final_Result_1.png}
+	\caption{The result of the object detection algorithm on scene one}
+	\label{fig:result-1}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.85\textwidth]{Final_Result_2.png}
+	\caption{The result of the object detection algorithm on scene two}
+	\label{fig:result-2}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.85\textwidth]{Final_Result_3.png}
+	\caption{The result of the object detection algorithm on scene three}
+	\label{fig:result-3}
+\end{figure}
+
+\clearpage
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.85\textwidth]{Final_Result_4.png}
+	\caption{The result of the object detection algorithm on scene four}
+	\label{fig:result-4}
+\end{figure}
+
+\section{Match reduction} \label{sec:threshold}
+As described in \Cref{sec:config-cluster}, SIFT yields a large number of descriptor matches. Those also contain several incorrect matches. An attempt was made to filter matches using a simple threshold $t$ for the match distance, considering only matches with $d < t$. The influence of this threshold, when clustering parameters remain fixed, is discussed in this section. The scene depicted in \Cref{fig:result-4} was used for demonstration of these effects and may be compared to the impact of different thresholds in \Cref{fig:result-t}.
+
+\begin{figure} [h!]
+	\centering
+	\begin{subfigure}[b]{0.48\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{Final_Result_t100.png}
+		\subcaption{$t=100$}
+		\label{subfig:t100}
+	\end{subfigure}
+	\hfill
+	\begin{subfigure}[b]{0.48\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{Final_Result_t200.png}
+		\subcaption{$t=200$}
+		\label{subfig:t200}
+	\end{subfigure}
+	\vskip\baselineskip
+	\begin{subfigure}[b]{0.48\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{Final_Result_t350.png}
+		\subcaption{$t=350$}
+		\label{subfig:t350}
+	\end{subfigure}
+	\hfill
+	\begin{subfigure}[b]{0.48\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{Final_Result_t400.png}
+		\subcaption{$t=400$}
+		\label{subfig:t400}
+	\end{subfigure}
+	\caption{Effect of varying match distance threshold $t$ on the object detection performance in scene four (compare to \Cref{fig:result-4})}
+	\label{fig:result-t}
+\end{figure}
+
+For very high threshold values of $t \approx 400$, the increased number of matches lead to failed separation of the individual clusters, resulting in only a single detected object. As shown in \Cref{subfig:t400}, this detection is not useful. Decreasing the threshold to $t \approx 350$ shows multiple bad object detections due to a high number of matches (see \Cref{subfig:t350}), which are however clustered into separate objects. These objects show not only additional erroneous detections, but also the actually present objects show severe displacement. Values near $t \approx 300$ yield significantly superior detection results, which is why for the previous experiment $t=270$ was chosen. Lower values $t<250$ removed too many matches and impacted the performance of the algorithm negatively by completely prohibiting the detection of object instances in the scene, as can be observed in \Cref{subfig:t100,subfig:t200}. It was found, that clustering algorithms are more suitable for the strict selection of appropriate matches (or configurations). The implemented algorithm is expected to work on  additional scene images, however smaller instances than appearing in \Cref{fig:result-4} or increased out-of-plane rotation my pose difficulties.
+
+\end{document}
