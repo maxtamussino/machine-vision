@@ -1,0 +1,196 @@
+\documentclass[a4paper, 12pt]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}  % ngerman for German
+
+\usepackage{lmodern}  % nicer font
+\usepackage{gensymb}
+\usepackage{amsmath}
+\DeclareMathOperator{\Tr}{Tr} % trace operator
+\usepackage{amssymb}
+\usepackage{nicefrac}  % nicer inline fractions
+\usepackage{listings}
+\usepackage{enumerate}
+\usepackage{booktabs}  % nicer tables (e.g. \toprule)
+\usepackage{siunitx}  % easy handling of value + unit (e.g. \SI{10}{\pF})
+% \sisetup{}  % configure siunitx (e.g. locale = DE)
+\usepackage{verbatim}
+\usepackage{subcaption}  % captions for subplots
+\usepackage[european, siunitx]{circuitikz}  % draw circuit diagrams
+\usepackage{enumitem}
+\setlist[itemize]{label=\rule[0.5ex]{0.6ex}{0.6ex}} % nice black squares for itemize environments
+\usepackage{graphicx}
+\graphicspath{{./figures/}}
+
+\usepackage{geometry}
+\geometry{%
+	left   = 2.5cm,
+	right  = 2.5cm,
+	top    = 3cm,
+	bottom = 3cm
+}
+
+\usepackage[  % ieee style citations (e.g. [1])
+	backend     = biber,
+	maxbibnames = 99,
+	autocite    = footnote,
+	style	    = ieee,
+	citestyle   = numeric-comp,
+	doi=false, isbn=false
+]{biblatex}
+\addbibresource{bibliography/bibliography.bib}
+
+\usepackage[hang]{footmisc}
+\renewcommand{\hangfootparindent}{2em} 
+\renewcommand{\hangfootparskip}{2em}
+\renewcommand{\footnotemargin}{0.00001pt}
+\renewcommand{\footnotelayout}{\hspace{2em}}
+
+% last imports! Modify Title and author
+\usepackage[bookmarksopen,colorlinks,citecolor=black,linkcolor=black, urlcolor = black]{hyperref}
+% after hyperref! 
+% e.g. \cref{label} or \Cref(label) for captial letter
+\usepackage[noabbrev, nameinlink]{cleveref} 
+
+% add missing hyphenations
+\hyphenation{im-ple-men-ta-tions}
+
+\title{Exercise 4: Image classification using machine learning}
+\author{
+  Max Tamussino, 01611815
+}
+\date{\today}
+
+
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+\pagebreak
+
+\section{Different neural networks}
+Various different types of neural networks were examined for their learning curves when classifying images. Specifically, the dataset \emph{CIFAR10} was split into a train and a test sample and mapped to ten different categories. The prediction accuracy and loss function of train and test samples were plotted for 30 epochs.
+The performance of linear classifiers can be obtained from \Cref{fig:linclass}. It shows increasing accuracy over epochs for the training set, however does not show a clear trend of increased accuracy for the test sample. A final validation accuracy of \SI{34.09}{\percent} is reached. The multilayer perceptron in \Cref{fig:mlp} uses two additional hidden layers. It shows significantly higher values for the accuracy, however strongly overfits to the sample, as the loss function of the test sample is increasing after epoch five. This technique yields a final validation accuracy of \SI{51.75}{\percent}.
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=\textwidth, trim={0cm, 0cm, 0cm, 1cm}, clip]{linear-classifier.png}
+	\caption{Linear classifier model}
+	\label{fig:linclass}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=\textwidth, trim={0cm, 0cm, 0cm, 1cm}, clip]{mlp-model.png}
+	\caption{Multilayer perceptron model}
+	\label{fig:mlp}
+\end{figure}
+
+The overfitting behaviour of the multilayer perceptron can be tackled by introducing regularisation techniques. The results for this are shown in \Cref{fig:mlpreg}. The accuracy of train and test shows higher values and better convergence, while additionally the loss function for the test sample does not increase for later epochs. This model leads to \SI{53.41}{\percent} validation accuracy in total. A further performance increase can be reached by using convolutional neural networks: Convolutional layers are introduced while still using normalisation techniques to avoid overfitting. CNNs were found to be very effective, as a final validation accuracy of \SI{77.65}{\percent} was reached.
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=\textwidth, trim={0cm, 0cm, 0cm, 1cm}, clip]{mlpreg-model.png}
+	\caption{Multilayer perceptron model with regularisation}
+	\label{fig:mlpreg}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=\textwidth, trim={0cm, 0cm, 0cm, 1cm}, clip]{cnn-model.png}
+	\caption{Convolutional neural network model}
+	\label{fig:cnn}
+\end{figure}
+
+Finally, the pre-trained model \emph{ResNet50} was used and fine-tuned by retraining only the last layer to be able to match to the given categories. This lead so significantly higher computational effort. The final validation accuracy after five epochs was \SI{78.47}{\percent}, which is a higher result than the normalised multilayer perceptrons after 30 epochs. 
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=\textwidth, trim={0cm, 0cm, 0cm, 1cm}, clip]{resnet-model.png}
+	\caption{Resnet model}
+	\label{fig:resnet}
+\end{figure}
+
+
+\section{Optimisers}
+
+\subsection{Stochastic Gradient Descent}
+Stochastic Gradient Descent (SGD) is parametrised by the value of the learning rate $r$. \Cref{fig:mlpreg-sgd-01,fig:mlpreg-sgd-0001} depict the learning outcome using regularised multilayer perceptrons. \Cref{fig:mlpreg-sgd-01} using $r=0.1$ shows a rapid drop of the cost function in the first epoch due to its high learning rate. The subsequent epochs do not show any increase in accuracy for the test set. If the learning rate is decreased to $r=0.001$, which is done in \Cref{fig:mlpreg-sgd-0001}, the learning time is increased significantly - however the outcome shows a more directed and smooth increase of accuracy towards later epochs. Also, this rate yields much higher test set accuracy for epoch 30.
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=\textwidth, trim={0cm, 0cm, 0cm, 1cm}, clip]{mlpreg-model-sgd01.png}
+	\caption{Multilayer perceptron with regularisation using SGD optimiser with learning rate $r=0.1$}
+	\label{fig:mlpreg-sgd-01}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=\textwidth, trim={0cm, 0cm, 0cm, 1cm}, clip]{mlpreg-model-sgd0001.png}
+	\caption{Multilayer perceptron with regularisation using SGD optimiser with learning rate $r=0.001$}
+	\label{fig:mlpreg-sgd-0001}
+\end{figure}
+
+\subsection{Adam}
+Adam is a method which gradually decreases the learning rate of SGD optimisation. The goal of this procedure is to reduce learning time by initially using high learning rates but maintaining smooth convergence towards the last epochs. This method shows inferior performance when compared to the basic low learning rate SGD in \Cref{fig:mlpreg-sgd-0001}, both train and test accuracy are lower than the ones for basic SGD. The outcome of the Adam learning procedure is shown in \Cref{fig:mlpreg-adam}. 
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=\textwidth, trim={0cm, 0cm, 0cm, 1cm}, clip]{mlpreg-model-adam.png}
+	\caption{Multilayer perceptron with regularisation using Adam optimiser}
+	\label{fig:mlpreg-adam}
+\end{figure}
+
+\pagebreak
+\section{Prediction results for deer images}
+
+\subsection{CNN and MLP models}
+The performance of the convolutional neural network and the multilayer perceptron can be examined by looking at the predictions for the images in \Cref{fig:classify}. The latter yields inferior performance: \Cref{fig:classify-deer-1} is correctly classified as a deer with \SI{66}{\percent}, while \Cref{fig:classify-deer-2} is wrongly classified as a cat with \SI{31}{\percent} and \Cref{fig:classify-horse} is also wrongly classified as a deer with \SI{50}{\percent}. It can be observed, that the classification process is significantly dependant on image colour. Green background color leads to classification as a deer, while \Cref{fig:classify-deer-2} is not recognised.
+The CNN predicts all images more accurately. \Cref{fig:classify-deer-1} is even more strongly correctly classified as a deer with \SI{98}{\percent}. \Cref{fig:classify-deer-2} is surprisingly classified correctly with \SI{99}{\percent}, and even \Cref{fig:classify-horse} is detected correctly as a horse with \SI{87}{\percent}.
+
+\begin{figure}[h!]
+	\centering
+	\begin{subfigure}[b]{0.25\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{toclassify-deer-1.png}
+		\caption{Deer in front of green background}
+		\label{fig:classify-deer-1}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.25\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{toclassify-deer-2.png}
+		\caption{Deer in front of brown background}
+		\label{fig:classify-deer-2}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.25\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{toclassify-horse.png}
+		\caption{Horse in front of green background}
+		\label{fig:classify-horse}
+	\end{subfigure}
+	\label{fig:classify}
+	\caption{Images to be classified by CNN and MLP}
+\end{figure}
+
+\subsection{Linear classifier model}
+In \Cref{fig:linclass-deer-predictions}, the image class predictions of the linear classifier model are shown for the image class \emph{deer}. As assumed from the outcomes of the previous experiment, correct predictions are predominantly showing green or dark backgrounds, as do false positives. False negatives show problems with other animals which are often depicted in front of similar backgrounds. The strong color dependency of MLPs is also the reason for the superior performance of CNNs, which have convolutional layers preserving edge information.
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=\textwidth, trim={4.3cm, 0cm, 4.3cm, 0cm}, clip]{linear-classifier-pred.png}
+	\caption{Predictions of the linear classifier model for image class \emph{deer}}
+	\label{fig:linclass-deer-predictions}
+\end{figure}
+
+\pagebreak
+\section{Perceptive field of CNNs}
+As CNNs use convolutions, each layer of convolutions has an increased perceptive field - which is the number of pixels influencing one particular node. Additionally, pooling between the layers increases this number. The perceptive field can be calculated using \Cref{eq:perc-field}, with $l_k$ being the perceptive field of the current layer, $l_{k-1}$ the perceptive field of the last layer, $f_k$ the filter size ($k \times k$) and $s_i$ the strides ($s \times s$) of past pooling layers. For the implemented three convolutional layers with filter size $3$, which are interleaved by two pooling layers with $s=2$, this yields $l_1=3$, $l_2=7$ and $l_3=15$.
+
+\begin{equation}
+	l_k = l_{k-1} + (f_k - 1) \cdot \prod_{i=1}^{k-1} s_i )
+	\label{eq:perc-field}
+\end{equation}
+
+\end{document}
