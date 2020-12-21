@@ -49,7 +49,6 @@ def fit_plane(pcd: o3d.geometry.PointCloud,
     ######################################################
     points = np.asarray(pcd.points)
     N = points.shape[0]
-    best_plane = np.array([0., 0., 1., 0.])
     best_inliers = np.full(N, False)
     num_iterations = 0
     eps = 3/N
@@ -92,6 +91,7 @@ def fit_plane(pcd: o3d.geometry.PointCloud,
     print("Interations: ", num_iterations)
     new_inliers = points[best_inliers]
     best_plane = np.linalg.lstsq(new_inliers, np.ones(new_inliers.shape[0]), rcond=None)[0]
+    best_plane = np.append(best_plane, -1)
 
     if best_plane[2] < 0:
         best_plane *= -1
@@ -148,7 +148,11 @@ def filter_planes(pcd: o3d.geometry.PointCloud,
     points_threshold = min_points_prop * np.asarray(pcd.points).shape[0]
 
     while np.asarray(filtered_pcd.points).shape[0] > points_threshold:
-        best_plane, best_inliers, x = fit_plane(filtered_pcd, confidence, inlier_threshold, min_sample_distance, error_func)
+        best_plane, best_inliers, _ = fit_plane(filtered_pcd, confidence, inlier_threshold, min_sample_distance, error_func)
+
+        if np.sum(best_inliers) < points_threshold:
+            break
+
         plane_eqs.append(best_plane)
 
         filter = np.flatnonzero(best_inliers)

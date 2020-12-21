@@ -91,8 +91,16 @@ def mlesac_error(pcd: o3d.geometry.PointCloud,
     inliers = distances < threshold
 
     v = np.linalg.norm(pcd.get_max_bound() - pcd.get_min_bound())
+    sigma = threshold / 2
+    gamma = 1 / 2
 
-    error = np.inf
+    for i in range(3):
+        po = (1 - gamma) / v
+        pi = gamma / (np.sqrt(2 * np.pi) * sigma) * np.exp(- np.square(distances) / (2 * sigma ** 2))
+        zi = pi / (pi + po)
+        gamma = np.mean(zi)
+
+    error = - np.sum(np.log(pi + po))
     ######################################################
 
     return error, inliers

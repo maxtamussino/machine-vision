@@ -26,9 +26,9 @@ if __name__ == '__main__':
     #########################################################
     # Parameters to generate the test data
     a, b, c, d = 0, 0.2, 1, -2  # Plane parameters: a*x + b*y + c*z + d = 0
-    normal_prop = 0.95  # To what proportion of the generated points we add noise in z-direction
+    normal_prop = 1  # To what proportion of the generated points we add noise in z-direction
     normal_std = 0.05  # The standard deviation of the Gaussian noise we add to normal_prop of the points
-    num_of_tests = 1000  # Number of tests: How often we try to fit the plane to the generated data
+    num_of_tests = 500  # Number of tests: How often we try to fit the plane to the generated data
     plane_dimensions = 5  # The x,y-coordinates are uniformly sampled from the range [-plane_dimension, plane_dimension]
     num_of_generated_points = 10000
     #########################################################

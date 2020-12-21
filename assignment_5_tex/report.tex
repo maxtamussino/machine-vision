@@ -56,7 +56,7 @@
 % add missing hyphenations
 \hyphenation{im-ple-men-ta-tions}
 
-\title{Exercise 4: Image classification using machine learning}
+\title{Exercise 5: Plane fitting using RANSAC and MLESAC}
 \author{
   Max Tamussino, 01611815
 }
@@ -70,127 +70,121 @@
 \tableofcontents
 \pagebreak
 
-\section{Different neural networks}
-Various different types of neural networks were examined for their learning curves when classifying images. Specifically, the dataset \emph{CIFAR10} was split into a train and a test sample and mapped to ten different categories. The prediction accuracy and loss function of train and test samples were plotted for 30 epochs.
-The performance of linear classifiers can be obtained from \Cref{fig:linclass}. It shows increasing accuracy over epochs for the training set, however does not show a clear trend of increased accuracy for the test sample. A final validation accuracy of \SI{34.09}{\percent} is reached. The multilayer perceptron in \Cref{fig:mlp} uses two additional hidden layers. It shows significantly higher values for the accuracy, however strongly overfits to the sample, as the loss function of the test sample is increasing after epoch five. This technique yields a final validation accuracy of \SI{51.75}{\percent}.
+\section{Single plane detection}
+
+The RANSAC algorithm is used for the detection of planes in three-dimensional image data, so-called pointclouds. \Cref{fig:singleplane} shows the detected plane in an example pointcloud containing one main plane and several objects on top of it. The used parameters are discussed in the following Section.
 
 \begin{figure}[h!]
 	\centering
-	\includegraphics[width=\textwidth, trim={0cm, 0cm, 0cm, 1cm}, clip]{linear-classifier.png}
-	\caption{Linear classifier model}
-	\label{fig:linclass}
+	\includegraphics[width=0.5\textwidth]{pointcloud5.jpg}
+	\caption{Detected plane (red) in simple pointcloud \\$t_I=0.02$, $d_S=0.8$, $c=0.9$}
+	\label{fig:singleplane}
 \end{figure}
 
+\section{Parameter influence}
+
+For this experiment, three parameters of the RANSAC algorithm were varied and examined for their influence on the result: The inlier threshold $t_I$, the minimum distance between samples $d_S$ and the termination confidence $c$. The previously used parameters in \Cref{fig:singleplane} were found to yield appropriate results and were therefore used as the base values.
+
+The parameter $t_I$ significantly influences the algorithm. Large values lead to the inclusion of parts of objects into the calculated plane, while small values lead to the incomplete detection of the plane points. The latter is depicted in \Cref{fig:params-t} and could lead to multiple detections of the same plane, however objects on the plane remain untouched. Generally, this parameter should be fitted to the expected noise level to optimally include all valid data points. The other parameters seem to have no or little effect in the examined scenario, as visible in \Cref{fig:params-d,fig:params-c}. Planes, which result from closely selected points (which is possible for low $d_S$), are more than likely to be removed by the following RANSAC iteration, especially in this nearly ideal scenario. The number of inliers for the correct plane is just too high. The scenario also leads to the insignificance of $c$, as the first iterations will yield high confidence values, which will lie over this threshold. These parameters should be observed in other environments to examine their influence.
+
 \begin{figure}[h!]
 	\centering
-	\includegraphics[width=\textwidth, trim={0cm, 0cm, 0cm, 1cm}, clip]{mlp-model.png}
-	\caption{Multilayer perceptron model}
-	\label{fig:mlp}
+	\begin{subfigure}[b]{0.45\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{params-t.jpg}
+		\caption{$t_I=0.005$}
+		\label{fig:params-t}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.45\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{params-d.jpg}
+		\caption{$d_S=0$}
+		\label{fig:params-d}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.45\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{params-c.jpg}
+		\caption{$c=0.1$}
+		\label{fig:params-c}
+	\end{subfigure}
+	\caption{Results of the plane detection with varied RANSAC parameters}
+	\label{fig:params}
 \end{figure}
 
-The overfitting behaviour of the multilayer perceptron can be tackled by introducing regularisation techniques. The results for this are shown in \Cref{fig:mlpreg}. The accuracy of train and test shows higher values and better convergence, while additionally the loss function for the test sample does not increase for later epochs. This model leads to \SI{53.41}{\percent} validation accuracy in total. A further performance increase can be reached by using convolutional neural networks: Convolutional layers are introduced while still using normalisation techniques to avoid overfitting. CNNs were found to be very effective, as a final validation accuracy of \SI{77.65}{\percent} was reached.
+\section{Multi plane extraction}
+
+The multi-plane extraction using RANSAC was performed on three different scenes, all depicted in \Cref{fig:multi}. The results are the most accurate in \Cref{fig:multi-doors}, as the main few planes are detected with only one additional insignificant plane. \Cref{fig:multi-kitchen} shows a higher number of additional planes which were erroneously extracted. Even the main kitchen front was not completely extracted as one plane. \Cref{fig:multi-desk} shows the difficulty of the random starting point selection: The two monitors are wrongly detected to be one plane. The main desk plane is however detected correctly and completely.
 
 \begin{figure}[h!]
 	\centering
-	\includegraphics[width=\textwidth, trim={0cm, 0cm, 0cm, 1cm}, clip]{mlpreg-model.png}
-	\caption{Multilayer perceptron model with regularisation}
-	\label{fig:mlpreg}
+	\begin{subfigure}[b]{0.48\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{multi-desk-cut.jpg}
+		\caption{Office desk}
+		\label{fig:multi-desk}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.48\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{multi-doors.jpg}
+		\caption{Multiple doors}
+		\label{fig:multi-doors}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.48\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{multi-kitchen.jpg}
+		\caption{Kitchen}
+		\label{fig:multi-kitchen}
+	\end{subfigure}
+	\caption{Result of repeated RANSAC plane detection on different scenes}
+	\label{fig:multi}
 \end{figure}
 
-\begin{figure}[h!]
-	\centering
-	\includegraphics[width=\textwidth, trim={0cm, 0cm, 0cm, 1cm}, clip]{cnn-model.png}
-	\caption{Convolutional neural network model}
-	\label{fig:cnn}
-\end{figure}
-
-Finally, the pre-trained model \emph{ResNet50} was used and fine-tuned by retraining only the last layer to be able to match to the given categories. This lead so significantly higher computational effort. The final validation accuracy after five epochs was \SI{78.47}{\percent}, which is a higher result than the normalised multilayer perceptrons after 30 epochs. 
+In addition, the influence of different downsampling strategies was tested, especially of uniform and voxel grid downsampling. Uniform downsampling in \Cref{fig:downsampling-uniform} shows vertical lines of pixels in the lower half, possibly because the number of pixels per row is a multiple of ten. This effect does not occur using voxel downsampling, as shown in \Cref{fig:downsampling-voxel}: The pixels are perfectly uniformly distributed. This technique is however computationally more expensive.
 
 \begin{figure}[h!]
 	\centering
-	\includegraphics[width=\textwidth, trim={0cm, 0cm, 0cm, 1cm}, clip]{resnet-model.png}
-	\caption{Resnet model}
-	\label{fig:resnet}
-\end{figure}
-
-
-\section{Optimisers}
-
-\subsection{Stochastic Gradient Descent}
-Stochastic Gradient Descent (SGD) is parametrised by the value of the learning rate $r$. \Cref{fig:mlpreg-sgd-01,fig:mlpreg-sgd-0001} depict the learning outcome using regularised multilayer perceptrons. \Cref{fig:mlpreg-sgd-01} using $r=0.1$ shows a rapid drop of the cost function in the first epoch due to its high learning rate. The subsequent epochs do not show any increase in accuracy for the test set. If the learning rate is decreased to $r=0.001$, which is done in \Cref{fig:mlpreg-sgd-0001}, the learning time is increased significantly - however the outcome shows a more directed and smooth increase of accuracy towards later epochs. Also, this rate yields much higher test set accuracy for epoch 30.
-
-\begin{figure}[h!]
-	\centering
-	\includegraphics[width=\textwidth, trim={0cm, 0cm, 0cm, 1cm}, clip]{mlpreg-model-sgd01.png}
-	\caption{Multilayer perceptron with regularisation using SGD optimiser with learning rate $r=0.1$}
-	\label{fig:mlpreg-sgd-01}
-\end{figure}
-
-\begin{figure}[h!]
-	\centering
-	\includegraphics[width=\textwidth, trim={0cm, 0cm, 0cm, 1cm}, clip]{mlpreg-model-sgd0001.png}
-	\caption{Multilayer perceptron with regularisation using SGD optimiser with learning rate $r=0.001$}
-	\label{fig:mlpreg-sgd-0001}
-\end{figure}
-
-\subsection{Adam}
-Adam is a method which gradually decreases the learning rate of SGD optimisation. The goal of this procedure is to reduce learning time by initially using high learning rates but maintaining smooth convergence towards the last epochs. This method shows inferior performance when compared to the basic low learning rate SGD in \Cref{fig:mlpreg-sgd-0001}, both train and test accuracy are lower than the ones for basic SGD. The outcome of the Adam learning procedure is shown in \Cref{fig:mlpreg-adam}. 
-
-\begin{figure}[h!]
-	\centering
-	\includegraphics[width=\textwidth, trim={0cm, 0cm, 0cm, 1cm}, clip]{mlpreg-model-adam.png}
-	\caption{Multilayer perceptron with regularisation using Adam optimiser}
-	\label{fig:mlpreg-adam}
+	\begin{subfigure}[b]{0.48\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{downsampling-uniform-10.jpg}
+		\caption{Uniform downsampling (every tenth point)}
+		\label{fig:downsampling-uniform}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.48\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{downsampling-voxel-0-03.jpg}
+		\caption{Voxel downsampling (using voxel size $0.03$)}
+		\label{fig:downsampling-voxel}
+	\end{subfigure}
+	\caption{Plane extraction using different downsampling techniques}
+	\label{fig:downsampling}
 \end{figure}
 
 \pagebreak
-\section{Prediction results for deer images}
 
-\subsection{CNN and MLP models}
-The performance of the convolutional neural network and the multilayer perceptron can be examined by looking at the predictions for the images in \Cref{fig:classify}. The latter yields inferior performance: \Cref{fig:classify-deer-1} is correctly classified as a deer with \SI{66}{\percent}, while \Cref{fig:classify-deer-2} is wrongly classified as a cat with \SI{31}{\percent} and \Cref{fig:classify-horse} is also wrongly classified as a deer with \SI{50}{\percent}. It can be observed, that the classification process is significantly dependant on image colour. Green background color leads to classification as a deer, while \Cref{fig:classify-deer-2} is not recognised.
-The CNN predicts all images more accurately. \Cref{fig:classify-deer-1} is even more strongly correctly classified as a deer with \SI{98}{\percent}. \Cref{fig:classify-deer-2} is surprisingly classified correctly with \SI{99}{\percent}, and even \Cref{fig:classify-horse} is detected correctly as a horse with \SI{87}{\percent}.
+\section{Performance comparison: RANSAC, MSAC and MLESAC}
+For this experiment, a noisy plane was created and additional noise pixels were added. RANSAC, MSAC and MLESAC were applied to this dataset 500 times and the performance statistics were compared.
 
-\begin{figure}[h!]
-	\centering
-	\begin{subfigure}[b]{0.25\textwidth}
-		\centering
-		\includegraphics[width=\textwidth]{toclassify-deer-1.png}
-		\caption{Deer in front of green background}
-		\label{fig:classify-deer-1}
-	\end{subfigure}
-	\begin{subfigure}[b]{0.25\textwidth}
-		\centering
-		\includegraphics[width=\textwidth]{toclassify-deer-2.png}
-		\caption{Deer in front of brown background}
-		\label{fig:classify-deer-2}
-	\end{subfigure}
-	\begin{subfigure}[b]{0.25\textwidth}
-		\centering
-		\includegraphics[width=\textwidth]{toclassify-horse.png}
-		\caption{Horse in front of green background}
-		\label{fig:classify-horse}
-	\end{subfigure}
-	\label{fig:classify}
-	\caption{Images to be classified by CNN and MLP}
-\end{figure}
+\subsection{Angle error}
 
-\subsection{Linear classifier model}
-In \Cref{fig:linclass-deer-predictions}, the image class predictions of the linear classifier model are shown for the image class \emph{deer}. As assumed from the outcomes of the previous experiment, correct predictions are predominantly showing green or dark backgrounds, as do false positives. False negatives show problems with other animals which are often depicted in front of similar backgrounds. The strong color dependency of MLPs is also the reason for the superior performance of CNNs, which have convolutional layers preserving edge information.
+Firstly, the error of the resulting angle is examined. \Cref{fig:performance-angle} shows error statistics for all three techniques. The superiority of MLESAC is clearly visible, as its mean error is significantly lower. MSACs mean error is a little higher than RANSACs, however its maximum generated error is lower - it depends on the application which one of those two will be considered more useful. 
 
 \begin{figure}[h!]
 	\centering
-	\includegraphics[width=\textwidth, trim={4.3cm, 0cm, 4.3cm, 0cm}, clip]{linear-classifier-pred.png}
-	\caption{Predictions of the linear classifier model for image class \emph{deer}}
-	\label{fig:linclass-deer-predictions}
+	\includegraphics[width=0.7\textwidth]{angle-error.png}
+	\caption{Error statistics of the detected angle for RANSAC, MSAC and MLESAC}
+	\label{fig:performance-angle}
 \end{figure}
-
 \pagebreak
-\section{Perceptive field of CNNs}
-As CNNs use convolutions, each layer of convolutions has an increased perceptive field - which is the number of pixels influencing one particular node. Additionally, pooling between the layers increases this number. The perceptive field can be calculated using \Cref{eq:perc-field}, with $l_k$ being the perceptive field of the current layer, $l_{k-1}$ the perceptive field of the last layer, $f_k$ the filter size ($k \times k$) and $s_i$ the strides ($s \times s$) of past pooling layers. For the implemented three convolutional layers with filter size $3$, which are interleaved by two pooling layers with $s=2$, this yields $l_1=3$, $l_2=7$ and $l_3=15$.
 
-\begin{equation}
-	l_k = l_{k-1} + (f_k - 1) \cdot \prod_{i=1}^{k-1} s_i )
-	\label{eq:perc-field}
-\end{equation}
+\subsection{Number of iterations}
+
+\Cref{fig:performance-iterations} shows box-plots of the needed number of iterations until the algorithm terminates. As in the previous experiment, a performance benefit of MLESAC is visible. The median number of iterations is lower for this technique. MSAC and RANSAC show very similar iteration number statistics, which is surprising as a performance benefit of the quadratic error function was expected.
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.7\textwidth]{num-iterations.png}
+	\caption{Iteration number statistics for RANSAC, MSAC and MLESAC}
+	\label{fig:performance-iterations}
+\end{figure}
 
 \end{document}
