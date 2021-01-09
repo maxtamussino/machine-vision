@@ -7,25 +7,18 @@ Machine Vision and Cognitive Robotics (376.054)
 Author: Max Tamussino
 MatrNr: 01611815
 """
-from typing import List, Tuple
 
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 import open3d as o3d
 import cv2
 
 
 def plot_pointclouds(pcd: o3d.geometry.PointCloud) -> None:
-    """ Plot the inlier points in red and the rest of the pointcloud as is. A coordinate frame is drawn on the plane
+    """ Plot a given pointcloud
 
-    :param pcd: The (down-sampled) pointcloud in which to detect the dominant plane
+    :param pcd: The (down-sampled) pointcloud
     :type pcd: o3d.geometry.PointCloud
-
-    :param inliers: Boolean array with the same size as pcd.points. Is True if the point at the index is an inlier
-    :type inliers: np.array
-
-    :param plane_eq: An array with the coefficients of the plane equation ax+by+cz+d=0
-    :type plane_eq: np.array [a,b,c,d]
 
     :return: None
     """
@@ -56,6 +49,8 @@ def plot_image(img: np.array, title: str, save_image: bool = False, use_matplotl
 
     :param use_matplotlib: If this is set to True, Matplotlib will be used for plotting, OpenCV otherwise
     :type use_matplotlib: bool
+
+    :return: None
     """
 
     # First check if img is color or grayscale. Raise an exception on a wrong type.
