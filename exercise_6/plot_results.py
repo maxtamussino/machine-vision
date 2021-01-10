@@ -35,7 +35,7 @@ def plot_pointclouds(pcd: o3d.geometry.PointCloud) -> None:
     vis.destroy_window()
 
 
-def plot_image(img: np.array, title: str, save_image: bool = False, use_matplotlib: bool = False) -> None:
+def plot_image(img: np.array, title: str, save_image: bool = False) -> None:
     """ Plot an image with either OpenCV or Matplotlib.
 
     :param img: :param img: Input image
@@ -47,39 +47,11 @@ def plot_image(img: np.array, title: str, save_image: bool = False, use_matplotl
     :param save_image: If this is set to True, an image will be saved to disc as title.png
     :type save_image: bool
 
-    :param use_matplotlib: If this is set to True, Matplotlib will be used for plotting, OpenCV otherwise
-    :type use_matplotlib: bool
-
     :return: None
     """
 
-    # First check if img is color or grayscale. Raise an exception on a wrong type.
-    if len(img.shape) == 3:
-        is_color = True
-    elif len(img.shape) == 2:
-        is_color = False
-    else:
-        raise ValueError(
-            'The image does not have a valid shape. Expected either (height, width) or (height, width, channels)')
-
-    if use_matplotlib:
-        plt.figure()
-        plt.title(title)
-        if is_color:
-            # OpenCV uses BGR order while Matplotlib uses RGB. Reverse the the channels to plot the correct colors
-            plt.imshow(img[..., ::-1])
-        else:
-            plt.imshow(img, cmap='gray')
-        plt.xticks([])
-        plt.yticks([])
-        plt.show()
-    else:
-        cv2.imshow(title, img)
-        cv2.waitKey(0)
+    cv2.imshow(title, img)
+    cv2.waitKey(0)
 
     if save_image:
-        if is_color:
-            png_img = (cv2.cvtColor(img, cv2.COLOR_BGR2BGRA) * 255.).astype(np.uint8)
-        else:
-            png_img = (cv2.cvtColor(img, cv2.COLOR_GRAY2BGRA) * 255.).astype(np.uint8)
-        cv2.imwrite(title.replace(" ", "_") + ".png", png_img)
+        cv2.imwrite("./tex/figures/" + title.replace(" ", "_") + ".png", img)
