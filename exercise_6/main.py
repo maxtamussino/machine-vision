@@ -20,8 +20,10 @@ from matching import *
 
 if __name__ == '__main__':
     # Parameters
+    debug_images = True
+    save_images = True
     use_color_matching = True
-    pointcloud_idx = 5
+    pointcloud_idx = 0
 
     # Training pointcloud names
     training_pcds = {
@@ -50,6 +52,8 @@ if __name__ == '__main__':
 
     # Project color image without plane to 2D
     scene_image = project_2d(pcd_filtered)
+    if debug_images:
+        plot_image(scene_image, "color_scene_" + str(pointcloud_idx), save_image=save_images)
 
     # Down-sample the loaded point cloud to reduce computation time
     pcd_sampled = pcd_filtered.voxel_down_sample(voxel_size=0.003)
@@ -77,10 +81,14 @@ if __name__ == '__main__':
 
     # Project colored clusters to 2D
     labels_image = project_2d(pcd_labels)
+    if debug_images:
+        plot_image(labels_image, "labels_unfilled_" + str(pointcloud_idx), save_image=save_images)
 
     # Fill the holes in the colored image
     kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
     labels_image = cv2.morphologyEx(labels_image, cv2.MORPH_CLOSE, kernel)
+    if debug_images:
+        plot_image(labels_image, "labels_filled_" + str(pointcloud_idx), save_image=save_images)
 
     # For every color in the labels image, an entry is created
     # Format: [color, class_best_score, best_score, current_score]
@@ -112,8 +120,6 @@ if __name__ == '__main__':
             # Update the object hypothesis list
             objects = categorise_matches(match_coordinates, labels_image, objects, object_colors, object_title)
 
-    # Write the object class names
+    # Write the object class names and plot the result
     result_image = write_hypothesis(objects, labels_image, scene_image)
-
-    # Plot the result
     plot_image(scene_image, "result_" + str(pointcloud_idx), save_image=True)
