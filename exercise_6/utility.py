@@ -82,7 +82,7 @@ def write_hypothesis(objects: list,
         indices = np.where(np.all(labels_image == obj[0], axis=-1))
 
         # Define description text
-        text = "{} ({:.1f})".format(obj[1], obj[2])
+        text = obj[1]  # Object hypothesis class name
         text_width, text_height = cv2.getTextSize(text, font, font_size, font_thickness)[0]
 
         # Location of the text (approx. in the middle of the object)

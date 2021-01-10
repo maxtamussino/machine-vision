@@ -38,7 +38,11 @@ def categorise_matches(match_coordinates: np.ndarray,
     :param curr_object_title: Class name of the object the matches are obtained from
     :type curr_object_title: str
 
-    :return np.array
+    :return: List of new object hypothesis, every entry of the form:
+                    [color, class_best_score, best_score, current_score]
+                    [0]    [1]               [2]         [3]
+    :rtype: list
+
     """
 
     # Match weight reduced if object has many matches
@@ -78,3 +82,5 @@ def categorise_matches(match_coordinates: np.ndarray,
             obj[2] = obj[3]
             obj[1] = curr_object_title
         obj[3] = 0
+
+    return objects

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-""" TODO Find title
+""" Detect and classify objects in 3D pointclouds
 
 Machine Vision and Cognitive Robotics (376.054)
 Author: Max Tamussino
@@ -19,13 +19,9 @@ from utility import *
 from matching import *
 
 if __name__ == '__main__':
-    # Select color matching
+    # Parameters
     use_color_matching = True
-
-    # Selects which single-plane file to use
     pointcloud_idx = 5
-
-    # Downsampling
     voxel_size = 0.003
 
     # Training pointcloud names
@@ -119,4 +115,4 @@ if __name__ == '__main__':
     result_image = write_hypothesis(objects, labels_image, scene_image)
 
     # Plot the result
-    plot_image(scene_image, "Result")
+    plot_image(scene_image, "result_" + str(pointcloud_idx), save_image=True)
