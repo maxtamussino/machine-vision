@@ -1,0 +1,75 @@
+\documentclass[a4paper, 12pt]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}  % ngerman for German
+
+\usepackage{lmodern}  % nicer font
+\usepackage{gensymb}
+\usepackage{amsmath}
+\DeclareMathOperator{\Tr}{Tr} % trace operator
+\usepackage{amssymb}
+\usepackage{nicefrac}  % nicer inline fractions
+\usepackage{listings}
+\usepackage{enumerate}
+\usepackage{booktabs}  % nicer tables (e.g. \toprule)
+\usepackage{siunitx}  % easy handling of value + unit (e.g. \SI{10}{\pF})
+% \sisetup{}  % configure siunitx (e.g. locale = DE)
+\usepackage{verbatim}
+\usepackage{subcaption}  % captions for subplots
+\usepackage[european, siunitx]{circuitikz}  % draw circuit diagrams
+\usepackage{enumitem}
+\setlist[itemize]{label=\rule[0.5ex]{0.6ex}{0.6ex}} % nice black squares for itemize environments
+\usepackage{graphicx}
+\graphicspath{{./figures/}}
+
+\usepackage{geometry}
+\geometry{%
+	left   = 2.5cm,
+	right  = 2.5cm,
+	top    = 3cm,
+	bottom = 3cm
+}
+
+\usepackage[  % ieee style citations (e.g. [1])
+	backend     = biber,
+	maxbibnames = 99,
+	autocite    = footnote,
+	style	    = ieee,
+	citestyle   = numeric-comp,
+	doi=false, isbn=false
+]{biblatex}
+\addbibresource{bibliography/bibliography.bib}
+
+\usepackage[hang]{footmisc}
+\renewcommand{\hangfootparindent}{2em} 
+\renewcommand{\hangfootparskip}{2em}
+\renewcommand{\footnotemargin}{0.00001pt}
+\renewcommand{\footnotelayout}{\hspace{2em}}
+
+% last imports! Modify Title and author
+\usepackage[bookmarksopen,colorlinks,citecolor=black,linkcolor=black, urlcolor = black]{hyperref}
+% after hyperref! 
+% e.g. \cref{label} or \Cref(label) for captial letter
+\usepackage[noabbrev, nameinlink]{cleveref} 
+
+% add missing hyphenations
+\hyphenation{im-ple-men-ta-tions}
+
+\title{Exercise 6: 3D Object detection}
+\author{
+  Max Tamussino, 01611815
+}
+\date{\today}
+
+
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+\pagebreak
+
+
+
+\end{document}
