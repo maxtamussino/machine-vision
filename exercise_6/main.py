@@ -22,7 +22,6 @@ if __name__ == '__main__':
     # Parameters
     use_color_matching = True
     pointcloud_idx = 5
-    voxel_size = 0.003
 
     # Training pointcloud names
     training_pcds = {
@@ -42,7 +41,7 @@ if __name__ == '__main__':
         raise FileNotFoundError("Couldn't load pointcloud in " + str(current_path))
 
     # Apply plane-fitting algorithm
-    _, inliers = obj_pcd.segment_plane(distance_threshold=0.01,
+    _, inliers = obj_pcd.segment_plane(distance_threshold=0.015,
                                        ransac_n=3,
                                        num_iterations=5000)
 
@@ -53,7 +52,7 @@ if __name__ == '__main__':
     scene_image = project_2d(pcd_filtered)
 
     # Down-sample the loaded point cloud to reduce computation time
-    pcd_sampled = pcd_filtered.voxel_down_sample(voxel_size=voxel_size)
+    pcd_sampled = pcd_filtered.voxel_down_sample(voxel_size=0.003)
 
     # Clustering
     labels = np.array(pcd_sampled.cluster_dbscan(eps=0.02, min_points=150))
@@ -68,6 +67,8 @@ if __name__ == '__main__':
     for label in range(num_labels):
         color = plt.get_cmap("gist_rainbow")(label / num_labels)[:3]
         object_colors = np.vstack((object_colors, color))
+
+    # Convert the colors to RGB and np.uint8
     object_colors = (object_colors[..., ::-1] * 255).astype(np.uint8)
 
     # Create colored pointcloud
