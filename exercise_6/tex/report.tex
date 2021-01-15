@@ -56,7 +56,7 @@
 % add missing hyphenations
 \hyphenation{im-ple-men-ta-tions}
 
-\title{Exercise 6: 3D Object detection}
+\title{Exercise 6: 3D Object classification}
 \author{
   Max Tamussino, 01611815
 }
@@ -70,6 +70,189 @@
 \tableofcontents
 \pagebreak
 
+\section{Results}
 
+\begin{figure}[h!]
+	\centering
+	\begin{subfigure}[b]{0.45\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{result_0.png}
+		\caption{Scene 1}
+		\label{fig:result-scene-1}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.45\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{result_1.png}
+		\caption{Scene 2}
+		\label{fig:result-scene-2}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.45\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{result_2.png}
+		\caption{Scene 3}
+		\label{fig:result-scene-3}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.45\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{result_3.png}
+		\caption{Scene 4}
+		\label{fig:result-scene-4}
+	\end{subfigure}
+	\caption{Result of the implemented 3D object recognition for scenes 1 to 4}
+	\label{fig:result-1-4}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\begin{subfigure}[b]{0.45\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{result_4.png}
+		\caption{Scene 5}
+		\label{fig:result-scene-5}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.45\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{result_5.png}
+		\caption{Scene 6}
+		\label{fig:result-scene-6}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.45\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{result_6.png}
+		\caption{Scene 7}
+		\label{fig:result-scene-7}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.45\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{result_7.png}
+		\caption{Scene 8}
+		\label{fig:result-scene-8}
+	\end{subfigure}
+	\caption{Result of the implemented 3D object recognition for scenes 5 to 8}
+	\label{fig:result-5-8}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\begin{subfigure}[b]{0.45\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{result_8.png}
+		\caption{Scene 9}
+		\label{fig:result-scene-9}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.45\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{result_9.png}
+		\caption{Scene 10}
+		\label{fig:result-scene-10}
+	\end{subfigure}
+	\caption{Result of the implemented 3D object recognition for scenes 9 to 10}
+	\label{fig:result-9-10}
+\end{figure}
+
+\section{Approach}
+To achieve the results given in the previous section, multiple steps were taken. This section describes the steps of the chosen approach. The input is a 3D pointcloud. Scene 9 (see \Cref{fig:result-scene-9}) is used to demonstrate the individual steps.
+
+\subsection{Dominant plane removal}
+To find the dominant plane, the table the objects are standing on, the RANSAC algorithm was applied. The inliers of this plane are then removed from the pointcloud. This colored scene pointcloud is projected to 2D for the SIFT matching discussed in following sections. The annotated version of this image is depicted in \Cref{fig:result-scene-8}.
+
+\subsection{Clustering}
+To prepare the pointcloud for the clustering, it is downsampled to reduce computational effort. For this purpose, a voxel grid is used. The clustering algorithm DBSCAN is then applied to the pointcloud. The pointcloud is projected to 2D image space (see \path{utility.py}), which is shown in \Cref{fig:clustering}.
+
+\subsection{Filling}
+The clustered 2D pointcloud projection is then transformed to continuous object areas. This is done using morphological transformations, in particular the closing operation, which consists of dilation followed by erosion. A $5 \times 5$ circular kernel is used, the result is depicted in \Cref{fig:filling} (see \path{main.py}, lines 121 and 122). This operation sometimes introduces unwanted additional colours at cluster boarders to the image.
+
+\subsection{Cropping}
+The resulting labels image is cropped, black borders are removed. This is shown in \Cref{fig:filling}. The exact same cropping is applied to the scene image, to keep matching dimensions. This is done to reduce computational effort for feature matching. The cropping function is implemented in \path{utility.py}.
+
+\subsection{Cluster merging}
+Because objects like cups are often clustered into two separate objects in 3D, an additional steps needs to be done to join those clusters. Firstly, for each cluster, the border of its area is calculated using the morphological gradient. It is then checked whether the border area contains the label colours of other adjacent objects. If so, a colour histogram of those objects is created and then compared. The distance between colour histograms is calculated by the maximum of actual colour difference and a scaled difference of the number of their appearances. If the colour histogram is similar, the clusters are merged. This is implemented in \path{merge_clusters.py}.
+
+By comparing \Cref{fig:cropping} to \Cref{fig:merging}, the effect can be seen - the purple cluster is not merged with the blue ones, because the colour histograms of the ketchup bottle and the cup are very different. In \Cref{fig:result-scene-6}, the colour histograms of the two cup parts were too different and did not merge as expected. 
+
+\begin{figure}[h!]
+	\centering
+	\begin{subfigure}[b]{0.3\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{labels_filled_8.png}
+		\caption{Filling}
+		\label{fig:filling}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.3\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{labels_cropped_8.png}
+		\caption{Cropping}
+		\label{fig:cropping}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.3\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{labels_merged_8.png}
+		\caption{Cluster merging}
+		\label{fig:merging}
+	\end{subfigure}
+	\caption{Result of filling, cropping and cluster merging in scene 9}
+	\label{fig:fill-crop}
+\end{figure}
+
+\subsection{Object comparison}
+This step is done for every training pointcloud available. Every pointcloud has a known class name.
+
+\subsubsection{Projection}
+The training pointcloud is projected to 2D and the resulting image is cropped to reduce computational effort. Black borders are removed in this step.
+
+\subsubsection{RGB SIFT matching}
+The training image is matched to the scene image using SIFT features, repeating the process for every RGB colour channel (see \path{sift_matching.py}), greatly increasing detection performance however also increasing computation time (see \Cref{sec:discussion}). For every keypoint, the best two matches are calculated. The better match of those is considered, if its distance is smaller than $0.7$ times the distance of the second match - filtering out bad matches. The coordinates of all considered matches in the scene image are determined.
+
+\subsubsection{Object hypothesis scoring}
+This step is done for every previously determined match coordinate. If the match coordinate lies within a labelled cluster area, the label colour of this area is examined. If there already is a hypothesis for this label colour, the current score is increased. The value by which it is increased is determined by the inverse of the available matches for this object, to prevent higher detection probabilities for larger training images. If there is no hypothesis for this colour, the validity of the colour has to be checked - morphological transformations may introduce unwanted colours (clusters). A valid colour then leads to a new entry in the object hypothesis list, being classified as \emph{unknown}. The implementation can be found in \path{categorise_matches.py}.
+
+\subsection{Object hypothesis update}
+After checking all matches, it is determined if any current score is higher than the previously highest score. If so, the current training image's class is used as the new hypothesis for this label color - but only if more than two matches lead to this decision, avoiding false positive detections based on little information. This particular function may be found in \path{categorise_matches.py} on lines 83-87.
+
+\section{Discussion} \label{sec:discussion}
+Generally, the proposed method does not assume only one single instance of each class in a scene. This leads to a certain disadvantage for the measured detection rate, as this assumption would rule out most object classes for the few badly classified objects in a scene, which could lead to a correct guess for those in most cases. This assumption was omitted as in real scenes, there could be many instances of one object class in a scene (eg. multiple cups on a table). The proposed method moreover leads to only few false positives, marking badly recognised objects as \emph{unknown}. This is desirable, as it makes clear where information is missing and where the object was correctly recognised. There are 6 false positives in a total of 60 objects.
+
+\subsection{Detection performance}
+The detection of objects varies slightly between different tries. Therefore, for the detection performance experiments, the best result out of five tries was used.
+
+The proposed method for 3D object detection classifies \SI{83.3}{\percent} of the given objects correctly, which is shown in more detail in \Cref{tab:detection-performance}. Because the clustering and labelling of the different objects worked correctly in most of the scenes (except for the cluster merging failure in scene 6, see \Cref{fig:result-scene-6}), the issue occurs during SIFT feature matching. Large and texturous objects like the book, the cookie box and the ketchup bottle are detected correctly more often (even without RGB SIFT), because the SIFT feature matching works better with many available keypoints. Especially low texture objects like the cup are however very badly detected.
+
+The effect of using all RGB color channels for SIFT matching can also be obtained from \Cref{tab:detection-performance}. The detection performance shows a significant decrease when this feature is disabled, lowering the overall detection rate to \SI{45.0}{\percent}. This experiment yielded many objects being detected as \emph{unknown}, indicating no strong enough object hypothesis. This occurs due to the the set minimum of three matches for a valid hypothesis. The experiment was repeated without this threshold, showing false results instead of classifying objects as unknown - this was not considered to be a more desirable result.
+
+\begin{table}[h!]
+	\centering
+	\begin{tabular}[t]{c | c c c c c c c | c}
+		Class & Book & Cookiebox & Cup & Ketchup & Sugar & Sweets & Tea & Total \\
+		\midrule
+		Appearances & 2 & 10 & 8 & 10 & 10 & 10 & 10 & 60\\
+		Correct RGB & 2 & 10 & 3 & 9 & 9 & 8 & 9 & 50\\
+		Correct Grey & 2 & 8 & 0 & 5 & 4 & 5 & 3 & 27\\
+		\midrule
+		Ratio RGB & \SI{100}{\percent} & \SI{100}{\percent} & \SI{37.5}{\percent} & \SI{90}{\percent} & \SI{90}{\percent} & \SI{80}{\percent} & \SI{90}{\percent} & \SI{83.3}{\percent}\\
+		Ratio Grey & \SI{100}{\percent} & \SI{80}{\percent} & \SI{0}{\percent} & \SI{50}{\percent} & \SI{40}{\percent} & \SI{50}{\percent} & \SI{30}{\percent} & \SI{45.0}{\percent}\\
+	\end{tabular}
+	\caption{Correct detections of object classes when present, comparing RGB SIFT with simple greyscale SIFT}
+	\label{tab:detection-performance}
+\end{table}
+
+\pagebreak
+\subsection{Execution time}
+The execution time for all significant parts of the algorithm was measured. The mean value of measurements for every given scene was used. It was examined, which influence image cropping and RGB SIFT have on these times. The results are displayed in \Cref{tab:execution-time}. It is clear that image cropping significantly reduces the time needed for 2D cluster merging and SIFT matching. The average total time per scene was reduced from \SI{35.7}{\second} to \SI{21.2}{\second}. Using RGB color SIFT matching, although it greatly increased detection performance, increased the execution time (without image cropping) to \SI{69.9}{\second}. This is due to the high average execution time for SIFT matching of \SI{376}{\milli\second} per training pointcloud. Combined, the two features lead to a lower than standard average execution time of \SI{34.6}{\second} per scene.
+
+\begin{table}[h!]
+	\centering
+	\begin{tabular}[t]{r | r r r r}
+		Task & \multicolumn{4}{c}{Mean execution time per scene [\SI{}{\milli\second}]} \\
+		& Standard & Cropping & RGB SIFT & Both \\
+		\midrule
+		Plane fitting & 4549.1 & 4369.0 & 4606.4 & 4333.5 \\
+		3D clustering & 162.3 & 156.8 & 153.6 & 153.8 \\
+		2D cluster merging & 8788.5 & 4248.1 & 10821.0 & 4248.3 \\
+		SIFT (per pointcloud) & 153.3 & 85.3 & 376.0 & 180.2 \\
+		Total & 35713.0 & 21211.9 & 69875.8 & 34853.6 \\
+	\end{tabular}
+	\caption{Mean execution time comparison of proposed method, using the mean of all provided scenes}
+	\label{tab:execution-time}
+\end{table} 
 
 \end{document}
