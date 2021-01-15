@@ -8,7 +8,6 @@ Author: Max Tamussino
 MatrNr: 01611815
 """
 
-import matplotlib.pyplot as plt
 import numpy as np
 import open3d as o3d
 import cv2
@@ -35,7 +34,7 @@ def plot_pointclouds(pcd: o3d.geometry.PointCloud) -> None:
     vis.destroy_window()
 
 
-def plot_image(img: np.array, title: str, save_image: bool = False) -> None:
+def plot_image(img: np.array, title: str, save_image: bool = False, skip_showing: bool = False) -> None:
     """ Plot an image with either OpenCV or Matplotlib.
 
     :param img: :param img: Input image
@@ -50,8 +49,9 @@ def plot_image(img: np.array, title: str, save_image: bool = False) -> None:
     :return: None
     """
 
-    cv2.imshow(title, img)
-    cv2.waitKey(0)
+    if not skip_showing:
+        cv2.imshow(title, img)
+        cv2.waitKey(0)
 
     if save_image:
         cv2.imwrite("./tex/figures/unused/" + title.replace(" ", "_") + ".png", img)

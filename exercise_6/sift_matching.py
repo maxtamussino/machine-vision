@@ -8,8 +8,10 @@ Author: Max Tamussino
 MatrNr: 01611815
 """
 
-from plot_results import *
+import numpy as np
 import cv2
+
+from plot_results import plot_image
 
 
 def match_sift_grey(scene_img: np.ndarray, object_img: np.ndarray, debug: bool = False) -> np.array:
@@ -39,16 +41,11 @@ def match_sift_grey(scene_img: np.ndarray, object_img: np.ndarray, debug: bool =
     search_params = dict(checks=50)  # or pass empty dictionary
     flann = cv2.FlannBasedMatcher(index_params, search_params)
 
-    # For each keypoint in object_img get the 3 best matches
-    matches = flann.knnMatch(object_descriptors, scene_descriptors, k=3)
+    # For each keypoint in object_img get the two best matches
+    matches = flann.knnMatch(object_descriptors, scene_descriptors, k=2)
 
     if debug:
-        # Only show every fifth match, otherwise it gets too overwhelming
-        match_mask = np.zeros(np.array(matches).shape, dtype=np.int)
-        match_mask[::5, ...] = 1
-
-        draw_params = dict(matchesMask=match_mask,
-                           flags=cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
+        draw_params = dict(flags=cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
         matches_img = cv2.drawMatchesKnn(object_img,
                                          object_keypoints,
                                          scene_img,
@@ -59,19 +56,17 @@ def match_sift_grey(scene_img: np.ndarray, object_img: np.ndarray, debug: bool =
         plot_image(matches_img, "Matches")
 
     match_coordinates = np.empty((0, 2))
-    for matches_list in matches:
-        for match in matches_list:
-            if match.distance > 250:
-                continue
-            match_coordinates = np.r_[match_coordinates, [scene_keypoints[match.trainIdx].pt]]
+    for i, (m, n) in enumerate(matches):
+        if m.distance < 0.7 * n.distance:
+            match_coordinates = np.r_[match_coordinates, [scene_keypoints[m.trainIdx].pt]]
 
     match_coordinates = np.round(match_coordinates).astype(int)
 
     return match_coordinates
 
 
-def match_sift_color(scene_img: np.ndarray, object_img: np.ndarray, debug: bool = False) -> np.array:
-    """ Matches two color images using SIFT descriptors for every color
+def match_sift_colour(scene_img: np.ndarray, object_img: np.ndarray, debug: bool = False) -> np.array:
+    """ Matches two colour images using SIFT descriptors for every colour
 
     :param scene_img: Scene image in RGB
     :type scene_img: np.array

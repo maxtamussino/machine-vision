@@ -45,6 +45,9 @@ def categorise_matches(match_coordinates: np.ndarray,
 
     """
 
+    if match_coordinates.size == 0:
+        return objects
+
     # Match weight reduced if object has many matches
     match_weight = 1 / match_coordinates.size
 
@@ -76,9 +79,9 @@ def categorise_matches(match_coordinates: np.ndarray,
                 # No "highest" score yet, so add hypothesis as unknown
                 objects.append([color, "unknown", 0., match_weight])
 
-    # Update object hypothesis if better and more than 3 matches
+    # Update object hypothesis if higher score and more than two matches
     for obj in objects:
-        if obj[3] > obj[2] and obj[3] > 3 * match_weight:
+        if obj[3] > obj[2] and obj[3] > 2 * match_weight:
             obj[2] = obj[3]
             obj[1] = curr_object_title
         obj[3] = 0
