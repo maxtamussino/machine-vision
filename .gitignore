@@ -1,5 +1,5 @@
 # Unnecessary output data
-exercise_6/outputs/*
+exercise_6/output/*
 
 # Pycharm data
 .idea/
