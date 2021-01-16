@@ -25,9 +25,8 @@ from merge_clusters import merge_clusters
 def detect_objects(pcd_idx: int):
     # Debugging
     debug_text = True    # Show text output
-    debug_images = True  # Show step result images
-    save_images = True   # Save shown images
-    skip_images = True   # Save but don't show images
+    show_images = False  # Show step result images
+    save_images = True   # Save step result images
     timing = False       # Print timing information
     if timing:
         endln = ""
@@ -36,7 +35,7 @@ def detect_objects(pcd_idx: int):
         endln = "\n"
 
     # Features
-    use_colour_matching = False  # Activate RGB SIFT
+    use_colour_matching = True  # Activate RGB SIFT
     use_cluster_merging = True  # Activate cluster merging
     use_cropping = True         # Activate image cropping
 
@@ -74,9 +73,8 @@ def detect_objects(pcd_idx: int):
 
     # Project colour image without plane to 2D
     scene_image = project_2d(pcd_filtered)
-    if debug_images:
-        plot_image(scene_image, "colour_scene_" + str(pcd_idx),
-                   save_image=save_images, skip_showing=skip_images)
+    plot_image(scene_image, "colour_scene_" + str(pcd_idx),
+               show_image=show_images, save_image=save_images)
 
     # Down-sample the loaded point cloud to reduce computation time
     pcd_sampled = pcd_filtered.voxel_down_sample(voxel_size=0.003)
@@ -113,26 +111,23 @@ def detect_objects(pcd_idx: int):
 
     # Project coloured clusters to 2D
     labels_image = project_2d(pcd_labels)
-    if debug_images:
-        plot_image(labels_image, "labels_unfilled_" + str(pcd_idx),
-                   save_image=save_images, skip_showing=skip_images)
+    plot_image(labels_image, "labels_unfilled_" + str(pcd_idx),
+               show_image=show_images, save_image=save_images)
 
     # Fill the holes in the coloured image
     morph_kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
     labels_image = cv2.morphologyEx(labels_image, cv2.MORPH_CLOSE, morph_kernel)
-    if debug_images:
-        plot_image(labels_image, "labels_filled_" + str(pcd_idx),
-                   save_image=save_images, skip_showing=skip_images)
+    plot_image(labels_image, "labels_filled_" + str(pcd_idx),
+               show_image=show_images, save_image=save_images)
 
     # Crop image according to labels image (first the scene image, see doc)
     if use_cropping:
         scene_image = crop_image_black(labels_image, scene_image)
         labels_image = crop_image_black(labels_image)
-        if debug_images:
-            plot_image(labels_image, "labels_cropped_" + str(pcd_idx),
-                       save_image=save_images, skip_showing=skip_images)
-            plot_image(scene_image, "color_scene_cropped_" + str(pcd_idx),
-                       save_image=save_images, skip_showing=skip_images)
+        plot_image(labels_image, "labels_cropped_" + str(pcd_idx),
+                   show_image=show_images, save_image=save_images)
+        plot_image(scene_image, "color_scene_cropped_" + str(pcd_idx),
+                   show_image=show_images, save_image=save_images)
 
     # Re-cluster adjacent clusters with similar colours
     if use_cluster_merging:
@@ -151,9 +146,8 @@ def detect_objects(pcd_idx: int):
             time_clustermerging = (end - start) * 1000
             if debug_text:
                 print(" {:.1f}ms".format(time_clustermerging))
-        if debug_images:
-            plot_image(labels_image, "labels_merged_" + str(pcd_idx),
-                       save_image=save_images, skip_showing=skip_images)
+        plot_image(labels_image, "labels_merged_" + str(pcd_idx),
+                   show_image=show_images, save_image=save_images)
 
     # For every colour in the labels image, an entry is created
     # Format: [colour, class_best_score, best_score, current_score]
@@ -211,7 +205,7 @@ def detect_objects(pcd_idx: int):
     # Write the object class names and plot the result
     result_image = write_hypothesis(objects, labels_image, scene_image)
     plot_image(result_image, "result_" + str(pcd_idx),
-               save_image=True, skip_showing=True)
+               show_image=True, save_image=True)
 
 
 if __name__ == '__main__':

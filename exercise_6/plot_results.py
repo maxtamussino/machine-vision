@@ -34,7 +34,7 @@ def plot_pointclouds(pcd: o3d.geometry.PointCloud) -> None:
     vis.destroy_window()
 
 
-def plot_image(img: np.array, title: str, save_image: bool = False, skip_showing: bool = False) -> None:
+def plot_image(img: np.array, title: str, show_image: bool = False, save_image: bool = False) -> None:
     """ Plot an image with either OpenCV or Matplotlib.
 
     :param img: :param img: Input image
@@ -43,13 +43,16 @@ def plot_image(img: np.array, title: str, save_image: bool = False, skip_showing
     :param title: The title of the plot which is also used as a filename if save_image is chosen
     :type title: string
 
-    :param save_image: If this is set to True, an image will be saved to disc as title.png
+    :param show_image: If this is set to True, the image will be shown
+    :type show_image: bool
+
+    :param save_image: If this is set to True, the image will be saved to disc as title.png
     :type save_image: bool
 
     :return: None
     """
 
-    if not skip_showing:
+    if show_image:
         cv2.imshow(title, img)
         cv2.waitKey(0)
 
