@@ -44,6 +44,7 @@ def match_sift_grey(scene_img: np.ndarray, object_img: np.ndarray, debug: bool =
     # For each keypoint in object_img get the two best matches
     matches = flann.knnMatch(object_descriptors, scene_descriptors, k=2)
 
+    # Show an image of the matches
     if debug:
         draw_params = dict(flags=cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
         matches_img = cv2.drawMatchesKnn(object_img,
@@ -55,6 +56,7 @@ def match_sift_grey(scene_img: np.ndarray, object_img: np.ndarray, debug: bool =
                                          **draw_params)
         plot_image(matches_img, "Matches")
 
+    # Sort out bad matches
     match_coordinates = np.empty((0, 2))
     for i, (m, n) in enumerate(matches):
         if m.distance < 0.7 * n.distance:
@@ -83,6 +85,7 @@ def match_sift_colour(scene_img: np.ndarray, object_img: np.ndarray, debug: bool
 
     match_coordinates = np.empty((0, 2), dtype=int)
 
+    # For every colour channel
     for col in range(3):
         # Pick out one colour
         scene_img_grey = scene_img[:, :, col]

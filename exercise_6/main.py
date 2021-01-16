@@ -22,7 +22,15 @@ from sift_matching import match_sift_grey, match_sift_colour
 from merge_clusters import merge_clusters
 
 
-def detect_objects(pcd_idx: int):
+def detect_objects(pcd_idx: int) -> None:
+    """ Detects objects in a 3D pointcloud, displays result image
+
+    :param pcd_idx: Index of the test pointcloud
+    :type pcd_idx: int
+
+    :return: None
+    """
+
     # Debugging
     debug_text = True    # Show text output
     show_images = False  # Show step result images

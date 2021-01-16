@@ -16,7 +16,7 @@ from camera_params import *
 
 
 def project_2d(pcd: o3d.geometry.PointCloud) -> np.ndarray:
-    """ Projects a pointcloud to a 2D numpy array
+    """ Projects a pointcloud to a 2D numpy image array
 
     :param pcd: The pointcloud which is to be projected
     :type pcd: o3d.geometry.PointCloud
@@ -120,7 +120,7 @@ def grey_to_rgb_mask(grey_mask: np.ndarray) -> np.ndarray:
     :param grey_mask: Image mask (shape (a, b), np.uint8)
     :type grey_mask: np.ndarray
 
-    :return: RGB mask (shape a, b, 3, np.uint8)
+    :return: RGB mask (shape (a, b, 3), np.uint8)
     :rtype: np.ndarray
     """
 
