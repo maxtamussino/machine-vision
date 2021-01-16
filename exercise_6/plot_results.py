@@ -57,4 +57,4 @@ def plot_image(img: np.array, title: str, show_image: bool = False, save_image: 
         cv2.waitKey(0)
 
     if save_image:
-        cv2.imwrite("./tex/figures/unused/" + title.replace(" ", "_") + ".png", img)
+        cv2.imwrite("./output/" + title.replace(" ", "_") + ".png", img)
