@@ -1,10 +1,10 @@
 # Exercise 2
 
-This exercise implements harris corner detection and the matching of corners using patch descriptors.
+This exercise implements Harris corner detection and the matching of corners using patch descriptors.
 
 ## Structure
 
-The project is separated into three files:
+The project is separated into several files:
 
 - **main_harris_image.py**: Contains main function to display detected corners in single image
 - **main_descriptors_image.py**: Contains main function to display matched corners of two images
@@ -22,7 +22,7 @@ The file **main_harris_image.py** is executed to obtain the corners for one imag
 - `k`: Parameter for calculating corners, see line 75 in **harris_corner.py**
 - `threshold`: Corner strength threshold, see line 81 in **harris_corner.py**
 
-For detailed information in harris corner detection, see https://docs.opencv.org/master/dc/d0d/tutorial_py_features_harris.html.
+For detailed information in Harris corner detection, see https://docs.opencv.org/master/dc/d0d/tutorial_py_features_harris.html.
 
 The file **main_descriptors_image.py** is executed to obtain the corner matching results for two images. It also contains the option to set several parameters:
 
