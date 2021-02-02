@@ -49,7 +49,7 @@
 % last imports! Modify Title and author
 \usepackage[bookmarksopen,colorlinks,citecolor=black,linkcolor=black, urlcolor = black]{hyperref}
 % after hyperref! 
-% e.g. \cref{label} or \Cref(label) for captial letter
+% e.g. \cref{label} or \Cref(label) for capital letter
 \usepackage[noabbrev, nameinlink]{cleveref} 
 
 % add missing hyphenations
@@ -86,7 +86,7 @@ Gaussian filters provide smoother and better results than average filters. The k
 W = 2 \cdot \lfloor 3 \cdot \sigma \rceil + 1 = 19.
 \end{equation}
 
-Larger kernels therefore lead to much higher computational cost. However, the effect of smaller kernel widths is significant, especially for larger values of $\sigma$. In \cref{fig:kernels}, this is shown for $\sigma = 3$. The blurring filter using $W=3$ performes visibly worse than the one using the correct kernel size $W=19$. Reduced functionality can also be observed for $W=9$, but the difference to the correct kernel size may be neglectable for some resource-constrained applications.
+Larger kernels therefore lead to much higher computational cost. However, the effect of smaller kernel widths is significant, especially for larger values of $\sigma$. In \cref{fig:kernels}, this is shown for $\sigma = 3$. The blurring filter using $W=3$ performs visibly worse than the one using the correct kernel size $W=19$. Reduced functionality can also be observed for $W=9$, but the difference to the correct kernel size may be neglectable for some resource-constrained applications.
 
 \begin{figure} [h!]
 	\centering
@@ -142,7 +142,7 @@ In \cref{fig:sigmas_intensities}, the intensities of the pixels along row $300$ 
 \end{figure}
 
 \subsection{Non-maxima suppression}
-As the gradient function amplifies noise, it is important to smooth the image before applying the sobel filter. Also, by smoothing the image with a gaussian filter, the overall edge strength is reduced and insignificant edges can be removed. The effect of different values of $\sigma$ can be observed in \cref{fig:sigmas_nonmax}.
+As the gradient function amplifies noise, it is important to smooth the image before applying the Sobel filter. Also, by smoothing the image with a gaussian filter, the overall edge strength is reduced and insignificant edges can be removed. The effect of different values of $\sigma$ can be observed in \cref{fig:sigmas_nonmax}.
 
 \begin{figure} [h!]
 	\centering
@@ -300,11 +300,11 @@ To adapt the edge detection algorithm to different environments, edges must be s
 \end{figure}
 
 \subsection{Issues with automatic threshold selection}
-As described in \cref{subsec:static}, not every situation requires adaption to very different images. Automatic threshold selection might even lead to trouble in some applications. In the example mentioned above, visual product inspection might cause false alarms when looking for irregularities: If there are none present, the algorithm will set the thresholds lower to compensate - and find egdes, which are only amplified noise. Such situations might be prevented by providing boundaries for automatic threshold selection.
+As described in \cref{subsec:static}, not every situation requires adaption to very different images. Automatic threshold selection might even lead to trouble in some applications. In the example mentioned above, visual product inspection might cause false alarms when looking for irregularities: If there are none present, the algorithm will set the thresholds lower to compensate - and find edges, which are only amplified noise. Such situations might be prevented by providing boundaries for automatic threshold selection.
 
 \section{Adding gaussian noise}
 \subsection{Influence on edge detection} \label{subsec:noise}
-In this experiment, gaussian noise with zero mean and different standard deviations $\sigma_n$ is added to the input image. Afterwards, edge detection with automatic threshold selection is applied. The parameters are selected like before: Of the edges, the intensity of $10\%$ of them is $>t_2$ and the intensity of $25\%$ is $>t_1$. The results are depicted in \cref{fig:noise}. Gaussian noise with a standard deviation of $\sigma_n=0.5$ seriously impacts the detection of even the strongest edges in the image, while values of $\sigma_n \leq 0.2$ dont seem to make a significant difference.
+In this experiment, gaussian noise with zero mean and different standard deviations $\sigma_n$ is added to the input image. Afterwards, edge detection with automatic threshold selection is applied. The parameters are selected like before: Of the edges, the intensity of $10\%$ of them is $>t_2$ and the intensity of $25\%$ is $>t_1$. The results are depicted in \cref{fig:noise}. Gaussian noise with a standard deviation of $\sigma_n=0.5$ seriously impacts the detection of even the strongest edges in the image, while values of $\sigma_n \leq 0.2$ do not seem to make a significant difference.
 
 \begin{figure} [h!]
 	\centering

@@ -50,7 +50,7 @@
 % last imports! Modify Title and author
 \usepackage[bookmarksopen,colorlinks,citecolor=black,linkcolor=black, urlcolor = black]{hyperref}
 % after hyperref! 
-% e.g. \cref{label} or \Cref(label) for captial letter
+% e.g. \cref{label} or \Cref(label) for capital letter
 \usepackage[noabbrev, nameinlink]{cleveref} 
 
 % add missing hyphenations
@@ -73,7 +73,7 @@
 \section{Configuration clustering} \label{sec:config-cluster}
 Every SIFT match contributes one vote for a possible configuration in the scene image. Because SIFT yields large numbers of matches, the resulting number of matches has to be reduced to the configurations which should be found. In order to achieve this, a clustering algorithm was applied. The four-dimensional configuration space of position ($x$ and $y$), scale ($S$) and orientation ($\alpha$) showed inferior handling of orientations around $\alpha=\pm \pi$, because the clustering algorithm separated orientations around $\alpha=+\pi$ and those around $\alpha=-\pi$. Therefore, the configuration space was expanded. Instead of clustering the orientation itself, its two-dimensional complex representation $o_1=\sin{\alpha}$ and $o_2=\cos{\alpha}$ was used. This resulted in a five-dimensional configuration space, in which the orientation is represented by a closed circle, circumventing any issues with the transition around $\alpha=\pm \pi$. Additionally, the dimensions $x$, $y$ and $S$ were normalised to the range $[0;1]$ by dividing to the maximum occurring value respectively. The last two dimensions $o_1$ and $o_2$, which naturally are in the range $[-1;1]$, were separately normalised to the range $[-0.5;0.5]$. This is necessary to use the same clustering parameters for different images.
 
-On the normalised configuration space, the clustering algorithm DBSCAN was used. DBSAN applies to the given problem very well, as outlier configurations with a distance $d > \varepsilon$ are not included in clusters, while dense areas counting $n > samples_{min}$ configurations are combined into a single cluster. Of each resulting cluster, the median configuration is chosen and denormalised. The use of the median is resistant against outliers within the clusters. Additional processing of the detected configurations was omitted, as the examined scenes did already yield exactly one satisfying configuration per detectable object.
+On the normalised configuration space, the clustering algorithm DBSCAN was used. DBSAN applies to the given problem very well, as outlier configurations with a distance $d > \varepsilon$ are not included in clusters, while dense areas counting $n > samples_{min}$ configurations are combined into a single cluster. Of each resulting cluster, the median configuration is chosen and de-normalised. The use of the median is resistant against outliers within the clusters. Additional processing of the detected configurations was omitted, as the examined scenes did already yield exactly one satisfying configuration per detectable object.
 
 \section{Detection results}
 The object depicted in \Cref{fig:object} is to be found in different scenes, each composed of multiple different objects. This section discusses the outcome of each scene. The clustering algorithm DBSCAN was used the parameters $\varepsilon=0.1$ and $samples_{min}=18$, which proved to yield reasonable results for all examined scenes. For the match distance threshold described in \Cref{sec:threshold}, $t=270$ was used.
