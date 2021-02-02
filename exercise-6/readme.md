@@ -4,7 +4,7 @@ This exercise implements object detection out of 3D pointcloud data.
 
 ## Structure
 
-The project is seperated into the following files:
+The project is separated into the following files:
 
 - **main.py**: Contains main function, to be executed
 - **camera_params.py**: Contains values for different parameters of the camera used to take the 3D pointcloud images
@@ -20,7 +20,7 @@ The file **main.py** contains a function to detect objects out of a specific sce
 
 - `debug_text`: Activates simple console status output
 - `show_images`: Show interim result images of single steps
-- `save_images` Save those images to ./doc/figures/unused
+- `save_images`: Save those images to `./doc/figures/unused`
 - `timing`: Debug output shows timing information
 
 Additionally, some special features may be enabled and disabled to compare their results:
