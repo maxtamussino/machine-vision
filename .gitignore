@@ -1,8 +1,9 @@
 # Unnecessary output data
 exercise-6/output/*
 
-# Pycharm data
+# Pycharm  & VScode data
 .idea/
+.vscode/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
